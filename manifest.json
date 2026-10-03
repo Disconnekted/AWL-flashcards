@@ -1,0 +1,31 @@
+{
+  "name": "Academic Word List Flashcards",
+  "short_name": "AWL Cards",
+  "description": "Flashcards, cloze sentences, and dictation practice for all 10 Academic Word List sublists.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#efe7d8",
+  "theme_color": "#1b4b43",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

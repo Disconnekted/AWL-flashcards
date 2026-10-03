@@ -1,0 +1,2073 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content">
+<title>Academic Word List — Flashcards</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1b4b43">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AWL Cards">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Special+Elite&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+  :root{
+    --paper:#efe7d8;
+    --card:#fffcf5;
+    --ink:#2a251e;
+    --pine:#1b4b43;
+    --pine-dark:#123430;
+    --stamp-red:#a13327;
+    --stamp-green:#2f6b4a;
+    --muted:#948a76;
+    --gold:#c9a227;
+    --rule: rgba(42,37,30,0.18);
+    --on-pine:#f4efe2;
+    --highlight:#fdf6e3;
+  }
+
+  html[data-theme="dark"]{
+    --paper:#1c1a16;
+    --card:#2a2621;
+    --ink:#ece4d6;
+    --pine:#3f9b84;
+    --pine-dark:#2e7d69;
+    --stamp-red:#e2746a;
+    --stamp-green:#6fcf9f;
+    --muted:#a39a8c;
+    --gold:#e0b949;
+    --rule: rgba(236,228,214,0.15);
+    --on-pine:#15120f;
+    --highlight:#3a331f;
+  }
+  html[data-theme="dark"] body{
+    background:
+      radial-gradient(ellipse at top, rgba(255,255,255,0.05), transparent 60%),
+      var(--paper);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(ellipse at top, rgba(255,255,255,0.5), transparent 60%),
+      var(--paper);
+    color:var(--ink);
+    font-family:'Source Serif 4', serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:32px 16px 64px;
+  }
+
+  .app{
+    width:100%;
+    max-width:560px;
+  }
+
+  .sticky-header{
+    position:sticky;
+    top:0;
+    z-index:30;
+  }
+
+  .drawer-tab{
+    background:var(--pine);
+    color:var(--on-pine);
+    border-radius:6px 6px 0 0;
+    padding:10px 18px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    font-family:'Special Elite', monospace;
+    letter-spacing:0.08em;
+    font-size:12.5px;
+    box-shadow:0 2px 0 var(--pine-dark);
+  }
+
+  .progress-track{
+    height:5px;
+    background:var(--rule);
+    border-bottom:1px solid var(--rule);
+  }
+  .progress-fill{
+    height:100%;
+    background:var(--gold);
+    width:0%;
+    transition:width 0.3s ease;
+  }
+
+  .drawer-progress{
+    font-family:'IBM Plex Mono', monospace;
+    letter-spacing:0;
+    opacity:0.85;
+  }
+
+  main{
+    background:var(--card);
+    border:1px solid var(--rule);
+    border-top:none;
+    border-radius:0 0 6px 6px;
+    box-shadow:0 10px 24px -12px rgba(42,37,30,0.35);
+    padding:36px 32px 32px;
+    position:relative;
+    min-height:340px;
+  }
+
+  /* ---------- Setup screen ---------- */
+  .setup h1{
+    font-size:22px;
+    margin:0 0 4px;
+  }
+  .setup p.sub{
+    margin:0 0 22px;
+    color:var(--muted);
+    font-size:14.5px;
+  }
+  label{
+    display:block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    letter-spacing:0.06em;
+    text-transform:uppercase;
+    color:var(--pine);
+    margin-bottom:6px;
+  }
+  textarea{
+    width:100%;
+    min-height:160px;
+    resize:vertical;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13.5px;
+    line-height:1.6;
+    padding:12px 14px;
+    border:1px solid var(--rule);
+    border-radius:4px;
+    background:var(--card);
+    color:var(--ink);
+  }
+  textarea:focus, input:focus{
+    outline:2px solid var(--gold);
+    outline-offset:1px;
+  }
+  .hint{
+    font-size:12px;
+    color:var(--muted);
+    margin-top:6px;
+  }
+
+  .field{ margin-bottom:20px; }
+
+  .segmented{
+    display:flex;
+    flex-wrap:wrap;
+    border:1px solid var(--pine);
+    border-radius:4px;
+    overflow:hidden;
+    width:100%;
+  }
+  .segmented button{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12px;
+    padding:8px 12px;
+    border:none;
+    background:transparent;
+    color:var(--pine);
+    cursor:pointer;
+    flex:1 1 auto;
+  }
+  .segmented button.active{
+    background:var(--pine);
+    color:var(--on-pine);
+  }
+  .segmented button:not(:last-child){ border-right:1px solid var(--pine); }
+
+  .checkline{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-size:13.5px;
+  }
+  .checkline input{ width:16px; height:16px; }
+
+  .btn{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    letter-spacing:0.03em;
+    padding:11px 20px;
+    border-radius:4px;
+    border:1px solid var(--pine);
+    background:var(--pine);
+    color:var(--on-pine);
+    cursor:pointer;
+    transition:transform 0.05s ease;
+  }
+  .btn:hover{ background:var(--pine-dark); }
+  .btn:active{ transform:translateY(1px); }
+  .btn.ghost{
+    background:transparent;
+    color:var(--pine);
+  }
+  .btn.ghost:hover{ background:rgba(27,75,67,0.08); }
+  .btn[disabled]{ opacity:0.45; cursor:not-allowed; }
+
+  .row{ display:flex; gap:12px; flex-wrap:wrap; align-items:center; }
+  .row.between{ justify-content:space-between; }
+
+  /* ---------- Card screen ---------- */
+  .index-card{
+    position:relative;
+    padding-top:6px;
+  }
+  .punches{
+    display:flex;
+    gap:14px;
+    justify-content:center;
+    margin-bottom:18px;
+  }
+  .punch{
+    width:14px; height:14px;
+    border-radius:50%;
+    background:var(--paper);
+    box-shadow: inset 0 2px 3px rgba(0,0,0,0.25);
+  }
+  .eyebrow{
+    font-family:'Special Elite', monospace;
+    font-size:11.5px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--muted);
+    text-align:center;
+    margin-bottom:10px;
+  }
+  .prompt{
+    font-size:26px;
+    font-weight:600;
+    text-align:center;
+    line-height:1.35;
+    padding:0 8px 6px;
+    margin-bottom:0;
+  }
+  .speak-btn{
+    background:transparent;
+    border:none;
+    cursor:pointer;
+    font-size:20px;
+    line-height:1;
+    vertical-align:middle;
+    margin-left:6px;
+    padding:2px 4px;
+  }
+  .speak-btn:hover{ opacity:0.65; }
+  .speak-btn:active{ transform:translateY(1px); }
+  .listen-prompt{
+    display:flex;
+    justify-content:center;
+    padding:14px 8px 10px;
+  }
+  .listen-play-btn{
+    font-size:16px;
+    padding:16px 28px;
+  }
+
+  .prompt-korean{
+    text-align:center;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:15px;
+    color:var(--pine);
+    padding:0 8px 20px;
+    border-bottom:1px dashed var(--rule);
+    margin-bottom:22px;
+  }
+  .prompt-nokorean{
+    padding-bottom:20px;
+    border-bottom:1px dashed var(--rule);
+    margin-bottom:22px;
+  }
+  .answer-row{
+    display:flex;
+    gap:10px;
+  }
+  .answer-row input[type=text]{
+    flex:1;
+    font-family:'Source Serif 4', serif;
+    font-size:16px;
+    padding:11px 14px;
+    border:1px solid var(--rule);
+    border-radius:4px;
+    background:var(--card);
+    color:var(--ink);
+  }
+
+  .feedback{
+    margin-top:20px;
+    text-align:center;
+  }
+  .stamp{
+    display:inline-block;
+    font-family:'Special Elite', monospace;
+    font-size:20px;
+    letter-spacing:0.1em;
+    padding:8px 22px;
+    border:3px solid currentColor;
+    border-radius:4px;
+    transform:rotate(-4deg);
+    text-transform:uppercase;
+  }
+  .stamp.correct{ color:var(--stamp-green); }
+  .stamp.close{ color:var(--gold); }
+  .stamp.wrong{ color:var(--stamp-red); }
+
+  .correction{
+    margin-top:14px;
+    font-size:14.5px;
+    color:var(--ink);
+  }
+  .correction b{ color:var(--pine); }
+  .example-sentence{
+    font-style:italic;
+    color:var(--muted);
+  }
+  .example-sentence b{ font-style:normal; }
+
+  .self-grade{
+    margin-top:16px;
+    display:flex;
+    gap:10px;
+    justify-content:center;
+  }
+
+  .next-row{
+    margin-top:24px;
+    text-align:center;
+  }
+
+  /* ---------- Results screen ---------- */
+  .score-big{
+    font-family:'Special Elite', monospace;
+    font-size:44px;
+    text-align:center;
+    color:var(--pine);
+    margin:6px 0 4px;
+  }
+  .score-sub{
+    text-align:center;
+    color:var(--muted);
+    font-size:14px;
+    margin-bottom:26px;
+  }
+  .miss-list{
+    border-top:1px solid var(--rule);
+    padding-top:16px;
+  }
+  .miss-item{
+    padding:10px 0;
+    border-bottom:1px solid var(--rule);
+    font-size:14px;
+  }
+  .miss-item b{ color:var(--stamp-red); }
+  .miss-item .given{ color:var(--muted); font-size:12.5px; }
+
+  .footer-note{
+    text-align:center;
+    font-size:11.5px;
+    color:var(--muted);
+    margin-top:18px;
+    font-family:'IBM Plex Mono', monospace;
+  }
+
+  .srs-overview{
+    margin-top:10px;
+    padding:12px 14px;
+    background:var(--card);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    font-size:12.5px;
+  }
+  .due-line{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:13px;
+    color:var(--pine);
+    margin-bottom:8px;
+  }
+  .box-badges{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .box-badge{
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11.5px;
+    padding:4px 9px;
+    border-radius:12px;
+    border:1px solid var(--rule);
+    color:var(--muted);
+    background:var(--paper);
+  }
+  .box-badge.due{
+    border-color:var(--gold);
+    color:var(--pine);
+    background:var(--highlight);
+  }
+  .box-tag{
+    display:inline-block;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    color:var(--muted);
+    margin-top:4px;
+  }
+  .box-summary{
+    border-top:1px solid var(--rule);
+    padding-top:14px;
+    margin-top:6px;
+    font-size:13.5px;
+  }
+  .box-summary-row{
+    display:flex;
+    justify-content:space-between;
+    padding:4px 0;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:12.5px;
+  }
+
+  .audio-toast{
+    position:fixed;
+    bottom:24px;
+    left:50%;
+    transform:translateX(-50%);
+    background:var(--ink);
+    color:var(--card);
+    padding:11px 18px;
+    border-radius:6px;
+    font-size:13px;
+    font-family:'IBM Plex Mono', monospace;
+    max-width:90vw;
+    text-align:center;
+    box-shadow:0 10px 24px -8px rgba(0,0,0,0.45);
+    z-index:2000;
+    opacity:0;
+    animation: toastIn 0.25s ease forwards, toastOut 0.3s ease 3.7s forwards;
+  }
+  @keyframes toastIn{ from{ opacity:0; transform:translate(-50%,10px); } to{ opacity:1; transform:translate(-50%,0); } }
+  @keyframes toastOut{ from{ opacity:1; } to{ opacity:0; } }
+
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.45);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    z-index:1000;
+    animation:fadeIn 0.15s ease;
+  }
+  @keyframes fadeIn{ from{ opacity:0; } to{ opacity:1; } }
+  .modal-box{
+    background:var(--card);
+    border:1px solid var(--rule);
+    border-radius:6px;
+    padding:22px 24px;
+    max-width:380px;
+    width:100%;
+    box-shadow:0 14px 30px -12px rgba(0,0,0,0.4);
+  }
+  .modal-message{
+    margin:0 0 18px;
+    font-size:14.5px;
+    line-height:1.55;
+    color:var(--ink);
+  }
+
+  .resume-banner{
+    border:1px solid var(--gold);
+    background:rgba(201,162,39,0.1);
+    border-radius:6px;
+    padding:14px 16px;
+    margin-bottom:22px;
+    font-size:14px;
+    color:var(--ink);
+  }
+  .resume-banner b{ color:var(--pine); }
+
+  .mastery-badge{
+    flex-shrink:0;
+    font-family:'IBM Plex Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.02em;
+    padding:3px 8px;
+    border-radius:10px;
+    border:1px solid var(--rule);
+    color:var(--muted);
+    white-space:nowrap;
+  }
+  .mastery-badge.has-progress{
+    border-color:var(--pine);
+    color:var(--pine);
+    background:rgba(27,75,67,0.08);
+  }
+
+  .inline-notice{
+    margin-top:14px;
+    padding:11px 14px;
+    border-radius:4px;
+    font-size:13.5px;
+    line-height:1.5;
+    border:1px solid var(--rule);
+  }
+  .inline-notice.error{
+    color:var(--stamp-red);
+    border-color:var(--stamp-red);
+    background:rgba(161,51,39,0.07);
+  }
+  .inline-notice.info{
+    color:var(--pine);
+    border-color:var(--pine);
+    background:rgba(27,75,67,0.07);
+  }
+
+  .theme-toggle{
+    background:transparent;
+    border:1px solid var(--on-pine);
+    border-radius:4px;
+    color:var(--on-pine);
+    font-size:14px;
+    line-height:1;
+    padding:5px 8px;
+    cursor:pointer;
+    opacity:0.85;
+  }
+  .theme-toggle:hover{ opacity:1; }
+
+  /* ---------- Card transition ---------- */
+  @keyframes cardIn{
+    from{ opacity:0; transform:translateY(8px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+  .index-card{
+    animation: cardIn 0.28s ease;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .index-card{ animation: none; }
+  }
+
+  @media (max-width:480px){
+    main{ padding:26px 16px 24px; }
+    .prompt{ font-size:21px; }
+    .score-big{ font-size:34px; }
+
+    /* Larger touch targets on small screens */
+    .btn{ padding:13px 18px; min-height:46px; font-size:13.5px; }
+    .btn.ghost{ min-height:44px; }
+    .segmented button{ padding:12px 10px; min-height:44px; font-size:12.5px; }
+    .answer-row input[type=text]{ padding:13px 14px; font-size:16px; }
+    .speak-btn{ font-size:24px; padding:6px 8px; }
+    .checkline input[type=checkbox]{ width:20px; height:20px; }
+    .deck-card .btn{ padding:11px 14px; min-height:42px; }
+    .theme-toggle{ padding:7px 10px; font-size:15px; }
+
+    /* Pin the answer row to the bottom of the screen, like a chat input
+       bar, so it's always reachable once the on-screen keyboard opens
+       instead of getting pushed off-screen along with the prompt above it. */
+    .answer-row{
+      position:fixed;
+      left:0; right:0; bottom:0;
+      flex-direction:column;
+      margin:0;
+      padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+      background:var(--card);
+      border-top:1px solid var(--rule);
+      box-shadow:0 -6px 16px -8px rgba(0,0,0,0.25);
+      z-index:40;
+    }
+    .answer-row #submitBtn{ width:100%; }
+    /* Reserve space so the fixed bar never covers the prompt or feedback
+       (the "Next card" button, stamp, etc.) sitting above it. */
+    .index-card{ padding-bottom:104px; }
+
+    /* While the keyboard is open, slide the sticky header out of the way
+       so the shrunk viewport is spent on the question and answer, not a
+       header that's no longer the most useful use of the space. */
+    html.keyboard-open .sticky-header{
+      transform:translateY(-100%);
+      transition:transform 0.2s ease;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="app" id="app">
+  <div class="sticky-header">
+    <div class="drawer-tab">
+      <span>ACADEMIC WORD LIST</span>
+      <span style="display:flex; align-items:center; gap:10px;">
+        <span class="drawer-progress" id="progress"></span>
+        <button id="themeToggle" class="theme-toggle" title="Toggle dark mode" aria-label="Toggle dark mode">🌙</button>
+      </span>
+    </div>
+    <div class="progress-track" id="progressTrack" style="display:none;"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+  <main id="stage"></main>
+</div>
+
+<script>
+const SUBLISTS = {
+  1: `analysis | noun | 분석 | a detailed examination of the elements or structure of something | The report included a detailed _______ of last year's sales figures. ## Her _______ of the poem revealed several hidden themes.
+approach | noun / verb | 접근 | a way of dealing with or thinking about something | She took a calm _______ to solving the problem. ## The coach suggested a different _______ for the final match.
+area | noun | 분야, 지역 | a particular part or region of a place, subject, or activity | This part of the city is a residential _______. ## Scientists are studying a remote _______ of the rainforest.
+assessment | noun | 평가 | the evaluation or estimation of the nature or quality of something | The teacher gave a written _______ of each student's progress. ## The company carried out a risk _______ before launching the product.
+assume | verb | 가정하다 | to accept something as true without proof | Don't _______ that everyone agrees with you. ## We shouldn't _______ he already knows about the meeting.
+authority | noun | 권한, 권위 | the power or right to give orders and make decisions | The manager has the _______ to approve new hires. ## Only the principal has the _______ to cancel classes.
+available | adjective | 이용 가능한 | able to be used or obtained | Tickets are still _______ for tonight's show. ## The manager is _______ for a quick chat after lunch.
+benefit | noun / verb | 이익, 혜택 | an advantage or profit gained from something | Regular exercise has many health _______s. ## One major _______ of remote work is the flexible schedule.
+concept | noun | 개념 | an abstract idea or general notion | The lecture introduced a new _______ in economics. ## It took years for the _______ to be widely accepted.
+consistent | adjective | 일관된 | acting or done in the same way over time; not contradictory | Her performance has been _______ throughout the season. ## A _______ sleep schedule can improve concentration.
+constitutional | adjective | 헌법의 | relating to the fundamental principles by which a state or organization is governed | The court ruled the law was _______. ## The amendment raised several _______ questions.
+context | noun | 맥락 | the circumstances that form the setting for an event or idea | You need more _______ to understand that quote. ## Reading the whole paragraph gives better _______ for that sentence.
+contract | noun / verb | 계약 | a written or spoken agreement intended to be enforceable by law | They signed a two-year _______ with the company. ## The lawyer reviewed the _______ before either side signed it.
+create | verb | 창조하다, 만들다 | to bring something into existence | Artists _______ new works every year. ## The chef likes to _______ new recipes every weekend.
+data | noun | 자료, 데이터 | facts and statistics collected for reference or analysis | The scientists collected _______ over several months. ## Researchers analyzed the _______ using specialized software.
+definition | noun | 정의 | a statement of the exact meaning of a word or concept | Look up the _______ of the word in the dictionary. ## The dictionary offers more than one _______ for this word.
+derived | verb / adjective | 파생된 | obtained or developed from a source | The word "biology" is _______ from Greek. ## Many English words are _______ from Latin roots.
+distribution | noun | 분배, 유통 | the way something is shared out or spread over an area | The company improved its _______ network across Asia. ## The charity organized the _______ of food to local shelters.
+economic | adjective | 경제의 | relating to trade, industry, and the management of money | The government announced new _______ policies. ## Analysts predict a period of _______ growth next year.
+environment | noun | 환경 | the surroundings or conditions in which a person, animal, or plant lives or operates | We must protect the natural _______. ## Pollution has a serious impact on the marine _______.
+established | verb / adjective | 확립된 | having existed for a long time and generally accepted as valid | The university was _______ in 1890. ## The museum has been _______ as one of the city's landmarks.
+estimate | noun / verb | 추정하다, 추정치 | an approximate calculation or judgment of a value | Can you give me an _______ of the total cost? ## The contractor gave a rough _______ for the repairs.
+evidence | noun | 증거 | the available facts indicating whether a belief or proposition is true | The detective found new _______ at the scene. ## There wasn't enough _______ to support the theory.
+export | verb / noun | 수출하다 | to send goods or services to another country for sale | The country plans to _______ more agricultural goods. ## Farmers hope to _______ their crops to new markets.
+factors | noun | 요인 | circumstances or influences that contribute to a result | There are many _______ the mayor had to think about. ## Weather and traffic were both _______ in the delay.
+financial | adjective | 금융의, 재정의 | relating to money or how it is managed | She sought _______ advice before investing. ## The startup is facing serious _______ difficulties.
+formula | noun | 공식 | a fixed method or rule for doing something, often expressed in symbols | Scientists use a _______ to calculate speed. ## The chemist wrote out the _______ on the whiteboard.
+function | noun / verb | 기능 | the purpose or role that something has, or how it operates | Explain the _______ of this button. ## Each organ in the body has a specific _______.
+identified | verb | 확인된, 식별된 | recognized or established as being a particular person or thing | The suspect was quickly _______ by witnesses. ## The virus was first _______ in a lab in 2003.
+income | noun | 소득, 수입 | money received, especially regularly, from work or investments | Her monthly _______ increased after the promotion. ## Freelancers often have an unpredictable _______.
+indicate | verb | 나타내다, 가리키다 | to point out or show something | These results _______ a strong recovery. ## A rising temperature can _______ the onset of fever.
+individual | noun / adjective | 개인 | a single person or thing, as distinct from a group | Each _______ has unique needs. ## The award recognizes _______ achievement rather than team effort.
+interpretation | noun | 해석 | an explanation of the meaning of something | There are many possible _______s of this poem. ## Critics offered very different _______s of the film's ending.
+involved | adjective | 관련된 | taking part in or connected with something | Several departments were _______ in the project. ## Everyone _______ in the accident was treated at the hospital.
+issues | noun | 쟁점, 문제 | important topics or problems for debate or discussion | The committee discussed several important _______. ## The survey asked residents about local _______.
+labour | noun | 노동 | work, especially physical work | The factory relies heavily on manual _______. ## The construction project required intense manual _______.
+legal | adjective | 법적인 | relating to or based on the law | It is important to get _______ advice before signing. ## The company's actions raised several _______ concerns.
+legislation | noun | 법률, 입법 | laws considered collectively, or the process of making laws | New _______ was passed to protect workers. ## The senate is debating new _______ on data privacy.
+major | adjective | 주요한 | important, serious, or significant | This was a _______ turning point in her career. ## Choosing a career is a _______ decision.
+method | noun | 방법 | a particular procedure for accomplishing something | They developed a new _______ for teaching math. ## This _______ has proven effective in past experiments.
+occur | verb | 발생하다 | to happen or take place | Earthquakes can _______ without warning. ## Power outages sometimes _______ during storms.
+percent | noun | 퍼센트, 백분율 | a proportion out of every hundred | Sales rose by ten _______ this quarter. ## Only a small _______ of applicants were accepted.
+period | noun | 기간 | a length or portion of time | The company grew rapidly during that _______. ## The Renaissance was a _______ of great artistic achievement.
+policy | noun | 정책 | a course of action adopted by a government, organization, or individual | The school introduced a new attendance _______. ## The company updated its refund _______ last month.
+principle | noun | 원칙 | a fundamental truth or rule that guides behavior or reasoning | Honesty is a core _______ of good journalism. ## Fairness is a guiding _______ in the organization.
+procedure | noun | 절차 | an established way of doing something | Follow the correct _______ when filing a complaint. ## New employees must learn the safety _______.
+process | noun | 과정 | a series of actions or steps taken to achieve a result | Learning a language is a slow _______. ## Baking bread is a slow but rewarding _______.
+required | adjective / verb | 필요한 | needed or made necessary | A valid passport is _______ for international travel. ## A certain amount of experience is _______ for this role.
+research | noun / verb | 연구 | systematic investigation to establish facts and reach new conclusions | The team conducted years of _______ before publishing. ## Her _______ focuses on renewable energy sources.
+response | noun | 응답, 반응 | a reply or reaction to something | Her _______ to the question surprised everyone. ## The government issued an official _______ to the crisis.
+role | noun | 역할 | the function or position that someone or something has | He played a key _______ in the negotiations. ## Teachers play a vital _______ in shaping young minds.
+section | noun | 부분, 구획 | a distinct part of something | Please read the next _______ of the report. ## The exam has a separate _______ for essay questions.
+sector | noun | 부문 | a distinct part of an economy, society, or activity | The tech _______ has grown rapidly this decade. ## Investment in the health _______ has increased significantly.
+significant | adjective | 중요한 | important or notable enough to have an effect | There was a _______ improvement in her grades. ## There has been a _______ rise in online shopping.
+similar | adjective | 비슷한 | having a resemblance without being identical | The two designs are very _______. ## The two brothers have _______ interests despite their age gap.
+source | noun | 출처, 원천 | the point of origin of something | Always check the _______ of your information. ## The journalist protected the identity of her _______.
+specific | adjective | 구체적인 | clearly defined or particular, as opposed to general | Can you be more _______ about what you need? ## The instructions were not _______ enough to follow easily.
+structure | noun | 구조 | the arrangement of and relations between the parts of something | The building has an unusual _______. ## The novel follows a nonlinear narrative _______.
+theory | noun | 이론 | a system of ideas explaining something, based on general principles | Scientists proposed a new _______ to explain the data. ## Her _______ was later confirmed through experimentation.
+variables | noun | 변수 | factors or quantities that are liable to change | The experiment had too many uncontrolled _______. ## The study controlled for several outside _______.`,
+  2: `achieve | verb | 성취하다, 달성하다 | to successfully complete something or reach a goal through effort | She worked hard to _______ her dream of becoming a doctor. ## The team finally _______ their sales target this quarter.
+acquisition | noun | 획득, 인수 | the act of acquiring or gaining possession of something | The company announced the _______ of a smaller rival. ## Language _______ happens rapidly in early childhood.
+administration | noun | 행정, 관리 | the management of an organization, business, or system | The new _______ introduced several policy changes. ## Hospital _______ requires careful coordination among departments.
+affect | verb | 영향을 미치다 | to influence or produce a change in something | Lack of sleep can _______ your concentration. ## The drought will _______ crop yields this year.
+appropriate | adjective | 적절한 | suitable or fitting for a particular situation | Please wear _______ clothing for the interview. ## It wasn't the _______ time to bring up the issue.
+aspects | noun | 측면, 양상 | particular parts or features of a situation or idea | The report examined several _______ of the problem. ## We need to consider all _______ before deciding.
+assistance | noun | 도움, 지원 | help or support given to someone | The charity provides financial _______ to families in need. ## Please contact us if you require further _______.
+categories | noun | 범주, 항목 | groups into which things are divided based on shared characteristics | The products are organized into several _______. ## Books in the library are sorted into different _______.
+chapter | noun | 장, 챕터 | a main division of a book, typically with a number or title | The final _______ reveals the identity of the killer. ## Please read the next _______ before class.
+commission | noun / verb | 위원회, 수수료, 의뢰하다 | a group of people given authority to perform a task, or a fee paid for services | The government set up a _______ to investigate the accident. ## Salespeople earn a _______ on every item they sell.
+community | noun | 공동체, 지역사회 | a group of people living in the same area or sharing common interests | The new park brought the _______ together. ## Local businesses support the _______ through sponsorships.
+complex | adjective / noun | 복잡한, 복합 단지 | consisting of many interconnected parts; difficult to understand | The instructions were far too _______ to follow. ## They live in an apartment _______ near the station.
+computer | noun | 컴퓨터 | an electronic device for storing and processing data | She bought a new _______ for schoolwork. ## The _______ crashed right before he saved his essay.
+conclusion | noun | 결론 | a final decision or judgment reached after consideration | The jury reached its _______ after six hours. ## In _______, the study supports the original hypothesis.
+conduct | verb / noun | 수행하다, 행동 | to carry out or organize an activity; a person's behavior | Researchers plan to _______ a new experiment next month. ## The teacher praised the students' good _______ during the trip.
+consequences | noun | 결과, 영향 | the results or effects of an action or condition | Every choice has _______, whether good or bad. ## The company faced serious _______ after the scandal.
+construction | noun | 건설, 공사 | the process of building something | The bridge is currently under _______. ## Noise from the _______ site woke the neighbors early.
+consumer | noun | 소비자 | a person who purchases goods or services | The new law protects _______ rights. ## Rising prices have changed _______ behavior.
+credit | noun / verb | 신용, 학점, 공로를 인정하다 | trust in a person's ability to pay, or recognition for an achievement | He paid for the trip using a _______ card. ## She deserves _______ for organizing the entire event.
+cultural | adjective | 문화의 | relating to the ideas, customs, and social behavior of a society | The festival celebrates the region's _______ heritage. ## _______ differences can sometimes cause misunderstandings abroad.
+design | noun / verb | 디자인, 설계하다 | a plan or drawing showing how something will look or work | The building's _______ won several architecture awards. ## Engineers had to _______ a lighter version of the engine.
+distinction | noun | 차이, 구별 | a clear difference between two similar things | There is an important _______ between the two theories. ## The award was given with _______ for outstanding service.
+elements | noun | 요소 | essential or basic parts of something | Trust and communication are key _______ of a good relationship. ## The recipe combines _______ from several different cuisines.
+equation | noun | 방정식 | a mathematical statement showing two expressions are equal | Students solved the _______ on the whiteboard. ## Balancing a chemical _______ takes practice.
+evaluation | noun | 평가 | a judgment about the value or quality of something | The teacher's _______ highlighted areas for improvement. ## An independent _______ confirmed the program's success.
+features | noun | 특징, 기능 | distinctive or characteristic parts of something | The new phone has several impressive _______. ## Mountains and rivers are notable _______ of the landscape.
+final | adjective | 최종의, 마지막의 | last in a series; ending a process | The teams will meet in the _______ next week. ## This is the _______ chance to submit your application.
+focus | verb / noun | 집중하다, 초점 | to concentrate attention on something; the center of attention | Try to _______ on one task at a time. ## The lecture's main _______ was climate change.
+impact | noun / verb | 영향, 영향을 미치다 | a strong effect or influence, or to have such an effect | The policy had a major _______ on small businesses. ## Social media continues to _______ how people communicate.
+injury | noun | 부상 | physical harm or damage to part of the body | He suffered a serious _______ during the match. ## Rest is essential for a full recovery from _______.
+institute | noun / verb | 기관, 도입하다 | an organization for a particular purpose, or to establish something | She studies at a research _______ downtown. ## The school decided to _______ a new dress code.
+investment | noun | 투자 | the act of putting money into something to earn a profit | Buying the property was a wise _______. ## The company increased its _______ in renewable energy.
+items | noun | 항목, 물품 | individual things, especially ones on a list | Please check off each _______ as you pack. ## The store sells a wide range of household _______.
+journal | noun | 학술지, 일지 | a scholarly publication, or a personal daily record | Her research was published in a leading science _______. ## He writes in his _______ every night before bed.
+maintenance | noun | 유지 보수 | the process of keeping something in good condition | Regular _______ keeps the machine running smoothly. ## The building requires constant _______ due to its age.
+normal | adjective | 정상적인 | typical, usual, or expected | It's _______ to feel nervous before a big test. ## Traffic has returned to _______ after the accident was cleared.
+obtained | verb | 얻은, 획득한 | gotten or acquired, especially through effort | The results were _______ through careful experimentation. ## She finally _______ the visa after months of waiting.
+participation | noun | 참여 | the act of taking part in an activity | Class _______ counts toward your final grade. ## The event saw record _______ from the community.
+perceived | verb / adjective | 인식된, 지각된 | understood or regarded in a particular way | The risk was _______ as much higher than it actually was. ## Customers _______ the new packaging as more eco-friendly.
+positive | adjective | 긍정적인 | good, favorable, or optimistic | The feedback from customers was overwhelmingly _______. ## Staying _______ can help you cope with stress.
+potential | noun / adjective | 잠재력, 잠재적인 | the capacity to develop or achieve something in the future | The coach saw great _______ in the young player. ## This new drug shows _______ for treating the disease.
+previous | adjective | 이전의 | existing or occurring before something else | The results were better than the _______ year's. ## He mentioned this in his _______ email.
+primary | adjective | 주요한, 기본적인 | main or most important | Her _______ concern was the safety of the passengers. ## Clean water is a _______ need in disaster relief.
+purchase | verb / noun | 구매하다, 구매 | to buy something, or the thing bought | They plan to _______ a new car next year. ## Keep the receipt in case you need to return your _______.
+range | noun / verb | 범위, 다양성 | the extent between limits, or a variety of things | The store offers a wide _______ of products. ## Prices _______ from ten to fifty dollars.
+region | noun | 지역 | a particular area, especially of a country or the world | The northern _______ is known for its cold winters. ## Wine production varies greatly by _______.
+regulations | noun | 규정, 규제 | official rules made by an authority | New safety _______ were introduced after the accident. ## Companies must comply with environmental _______.
+relevant | adjective | 관련된 | closely connected to the matter at hand | Please include only _______ information in your report. ## That research is highly _______ to our current project.
+resident | noun / adjective | 거주자, 거주하는 | a person who lives in a particular place | Every _______ received a notice about the water shutoff. ## A _______ doctor supervised the patients overnight.
+resources | noun | 자원 | materials, money, or assets available for use | The library offers many free educational _______. ## Natural _______ like oil and gas are limited.
+restricted | verb / adjective | 제한된 | limited or controlled in some way | Access to the lab is _______ to authorized staff. ## The area remains _______ due to ongoing repairs.
+security | noun | 보안, 안전 | protection against danger or threat | The airport increased _______ after the incident. ## A steady job gave her a sense of financial _______.
+sought | verb | 추구했다, 구했다 | past tense of "seek"; looked for or tried to obtain | She _______ advice from a trusted mentor. ## The company _______ new investors to expand overseas.
+select | verb / adjective | 선택하다, 선별된 | to choose carefully from a group; chosen as the best | Please _______ your preferred delivery date. ## Only a _______ few were invited to the ceremony.
+site | noun | 부지, 현장 | a location where something is, was, or will be built | Archaeologists excavated the ancient _______. ## Construction on the new _______ begins next month.
+strategies | noun | 전략 | plans of action designed to achieve a goal | The coach outlined new _______ for the second half. ## Effective study _______ can improve test performance.
+survey | noun / verb | 설문조사, 조사하다 | a set of questions to gather information, or to examine something | The company sent out a customer satisfaction _______. ## Researchers plan to _______ residents about the new policy.
+text | noun | 글, 본문 | written words, or a written work | Please read the assigned _______ before Monday. ## The ancient _______ was difficult to translate.
+traditional | adjective | 전통적인 | following long-established customs or beliefs | They wore _______ clothing for the wedding. ## The restaurant serves _______ dishes from the region.
+transfer | verb / noun | 이전하다, 이동 | to move something or someone from one place to another | He decided to _______ to a different university. ## Please complete this form to _______ your account.`,
+  3: `alternative | adjective / noun | 대안의, 대안 | available as another possibility or choice | We need to find an _______ solution to this problem. ## Cycling is a healthy _______ to driving.
+circumstances | noun | 상황, 사정 | the facts or conditions connected with an event or situation | Under normal _______, the flight would have landed on time. ## She explained the _______ that led to her resignation.
+comments | noun | 의견, 논평 | remarks expressing an opinion or reaction | The teacher wrote helpful _______ on my essay. ## Please leave your _______ below the article.
+compensation | noun | 보상, 배상 | something given to make up for loss, damage, or suffering | The airline offered _______ for the delayed flight. ## He received financial _______ after the accident.
+components | noun | 구성 요소 | parts that combine to form a whole | Each of these _______ is essential to the machine's function. ## The recipe combines several key _______.
+consent | noun / verb | 동의, 승낙 | permission for something to happen | The doctor needed the patient's _______ before surgery. ## Parents must _______ to the school trip in writing.
+considerable | adjective | 상당한 | large in amount or extent; significant | The project required a _______ amount of time and money. ## She has made _______ progress this semester.
+constant | adjective | 끊임없는, 지속적인 | unchanging over time; happening continuously | He lived in _______ fear of losing his job. ## The engine needs a _______ supply of fuel.
+constraints | noun | 제약, 제한 | limitations or restrictions on what can be done | Budget _______ prevented the team from hiring more staff. ## Time _______ forced them to cut the presentation short.
+contribution | noun | 기여, 공헌 | something given or done to help achieve a result | Her _______ to the project was greatly appreciated. ## Each employee makes a _______ to the company's success.
+convention | noun | 관습, 대회 | an accepted way of behaving, or a large formal meeting | It is a social _______ to shake hands when meeting someone. ## Thousands attended the annual _______ in the city center.
+coordination | noun | 조정, 협력 | the organization of different elements to work together effectively | The event required careful _______ between several departments. ## Good hand-eye _______ is important for this sport.
+core | noun / adjective | 핵심 | the central or most important part of something | Honesty is a _______ value at this company. ## The _______ of the argument was simple.
+corporate | adjective | 기업의 | relating to a large company or business | She works in the _______ headquarters downtown. ## The firm updated its _______ policy last year.
+corresponding | adjective | 상응하는, 일치하는 | matching or in agreement with something else | Each product has a _______ code on the label. ## The rise in demand had a _______ effect on prices.
+criteria | noun | 기준 | standards used to judge or decide something | Applicants must meet certain _______ to qualify. ## The judges used strict _______ to score the contest.
+deduction | noun | 추론, 공제 | a conclusion reached through reasoning, or an amount subtracted | Sherlock Holmes was famous for his logical _______. ## Tax _______ can lower your total payment.
+demonstrate | verb | 증명하다, 보여주다 | to show clearly through evidence or example | The experiment aims to _______ how the reaction occurs. ## She was able to _______ her skills during the interview.
+document | noun / verb | 문서, 기록하다 | a written or printed record providing information | Please sign the _______ before you leave. ## Researchers _______ every step of the process carefully.
+dominant | adjective | 지배적인, 우세한 | most powerful, influential, or noticeable | English is the _______ language in international business. ## The lion is the _______ animal in its territory.
+emphasis | noun | 강조 | special importance given to something | The course places strong _______ on practical skills. ## She put _______ on the importance of teamwork.
+ensure | verb | 보장하다, 확실히 하다 | to make certain that something happens | Please _______ that all doors are locked before leaving. ## The company took steps to _______ customer safety.
+excluded | verb / adjective | 제외된 | left out or not included | Tax is _______ from the listed price. ## Several candidates were _______ from the final round.
+framework | noun | 틀, 체계 | a basic structure supporting a system or concept | The report provides a _______ for future research. ## Lawmakers agreed on a new legal _______.
+funds | noun | 자금 | sums of money available for a purpose | The charity raised _______ for disaster relief. ## The city lacked the _______ to repair the bridge.
+illustrated | verb / adjective | 설명된, 삽화가 있는 | explained or made clear with pictures or examples | The teacher _______ the concept with a simple diagram. ## The children's book was beautifully _______.
+immigration | noun | 이주, 이민 | the act of coming to live permanently in a new country | The country's _______ policy changed significantly last year. ## He passed through _______ at the airport.
+implies | verb | 암시하다 | suggests something without stating it directly | Her silence _______ that she disagrees. ## The report _______ a link between diet and health.
+initial | adjective | 초기의, 처음의 | existing at the beginning | Our _______ plan didn't work, so we tried another approach. ## The _______ results were promising.
+instance | noun | 사례, 경우 | a particular example or occurrence | In this _______, the rule does not apply. ## For _______, consider the case of renewable energy.
+interaction | noun | 상호작용, 교류 | communication or reaction between people or things | Social _______ is important for children's development. ## The chemical _______ produced heat.
+justification | noun | 정당화, 타당한 이유 | a good reason for an action or belief | He gave no _______ for his sudden decision. ## The report provides a clear _______ for the new policy.
+layer | noun | 층, 겹 | a thickness of material covering a surface | Add a _______ of paint before the second coat. ## The cake had three _______ of frosting.
+link | noun / verb | 연결, 연결하다 | a connection between two things | Scientists found a _______ between smoking and heart disease. ## Please _______ your account to continue.
+location | noun | 위치, 장소 | a particular place or position | The hotel is in a convenient _______ near the airport. ## They filmed the movie on _______ in Iceland.
+maximum | noun / adjective | 최대의, 최대치 | the greatest amount or level possible | The elevator has a _______ capacity of ten people. ## Please arrive by the _______ time allowed.
+minorities | noun | 소수자, 소수 집단 | smaller groups within a larger population, especially by ethnicity or culture | The policy aims to protect the rights of _______. ## Ethnic _______ make up a small percentage of the population.
+negative | adjective | 부정적인 | expressing disagreement or the absence of something positive | She received _______ feedback on her proposal. ## The test results came back _______.
+outcomes | noun | 결과 | the results of an action or process | The study measured learning _______ over one year. ## Better healthcare leads to improved health _______.
+partnership | noun | 동반자 관계, 협력 | a relationship in which parties work together toward a shared goal | The two companies formed a business _______. ## Their _______ lasted more than a decade.
+philosophy | noun | 철학 | the study of fundamental ideas about existence, knowledge, and ethics | She studied _______ at university. ## His personal _______ is to always stay positive.
+physical | adjective | 신체적인, 물리적인 | relating to the body or material world, as opposed to the mind | Regular _______ activity improves health. ## The damage was mostly _______ rather than emotional.
+proportion | noun | 비율, 부분 | a part or share of a whole in relation to the total | A large _______ of students passed the exam. ## Mix the ingredients in the correct _______.
+published | verb / adjective | 출판된, 발표된 | made publicly available in printed or written form | Her first novel was _______ last year. ## The results were _______ in a scientific journal.
+reaction | noun | 반응 | a response to an event or situation | His _______ to the news was one of shock. ## The chemical _______ released a strong odor.
+registered | verb / adjective | 등록된 | officially recorded on a list | She _______ for the course online. ## Only _______ voters may participate in the election.
+reliance | noun | 의존 | dependence on someone or something | The country's _______ on imported oil is a concern. ## Their _______ on technology has increased over time.
+removed | verb / adjective | 제거된 | taken away or eliminated | The stain was easily _______ with soap. ## Several items were _______ from the shelf.
+scheme | noun | 계획, 제도 | a plan or system for doing something | The government launched a new pension _______. ## His _______ to avoid taxes was eventually discovered.
+sequence | noun | 순서, 연속 | a particular order in which events or things follow one another | Follow the _______ of steps carefully. ## The film tells the story out of _______.
+sex | noun | 성, 성별 | the state of being male or female, or biological reproduction | The form asked for age and _______. ## The study examined differences by _______.
+shift | noun / verb | 변화, 교대 근무 | a change in position, direction, or attitude | There has been a major _______ in public opinion. ## She works the night _______ at the hospital.
+specified | verb / adjective | 명시된 | stated clearly and precisely | Please arrive at the _______ time. ## The contract _______ the exact payment terms.
+sufficient | adjective | 충분한 | enough for a particular purpose | We didn't have _______ evidence to convict him. ## A _______ amount of rest is essential for recovery.
+task | noun | 과제, 업무 | a piece of work to be done | Finishing the report was a difficult _______. ## Each team member was given a specific _______.
+technical | adjective | 기술적인 | relating to specialized practical skills or a particular subject | The manual is full of _______ terms. ## We ran into a _______ problem during the demo.
+techniques | noun | 기법, 기술 | particular ways of carrying out a task | The chef demonstrated several cooking _______. ## New teaching _______ improved student engagement.
+technology | noun | 기술 | the application of scientific knowledge for practical purposes | Modern _______ has transformed how we communicate. ## The company invests heavily in new _______.
+validity | noun | 타당성, 유효성 | the quality of being logically or factually sound | Critics questioned the _______ of the survey results. ## The passport's _______ expires next year.
+volume | noun | 양, 음량 | the amount of space something occupies, or the loudness of sound | Please turn down the _______ on the TV. ## Sales _______ increased sharply last quarter.`,
+  4: `access | noun / verb | 접근, 접근하다 | the means or opportunity to approach or use something | Students need _______ to a computer for this class. ## The password lets you _______ your account online.
+adequate | adjective | 충분한, 적절한 | enough or satisfactory for a particular purpose | The hotel room was small but _______. ## We need _______ funding to complete the project.
+annual | adjective | 매년의, 연간의 | occurring once every year | The company holds an _______ meeting every spring. ## Her _______ salary increased this year.
+apparent | adjective | 분명한, 명백한 | clearly visible or understood; seeming to be true | It became _______ that the plan would not work. ## There was no _______ reason for the delay.
+approximated | verb | 근사치를 구했다 | estimated closely, though not exactly | The scientist _______ the total mass of the object. ## Costs were _______ before the final budget was set.
+attitudes | noun | 태도, 사고방식 | settled ways of thinking or feeling about something | Public _______ toward recycling have changed over time. ## Her positive _______ helped the whole team.
+attributed | verb | ~에 기인한, ~탓으로 여겨진 | regarded as caused by or belonging to a particular source | The rise in sales was _______ to better marketing. ## The painting is _______ to a famous artist.
+civil | adjective | 시민의, 민간의 | relating to ordinary citizens, as opposed to military or religious | The country guarantees basic _______ rights. ## He filed a _______ lawsuit against the company.
+code | noun | 암호, 규칙, 코드 | a system of rules, or a set of symbols representing information | The building must follow the fire safety _______. ## She learned to write computer _______ in college.
+commitment | noun | 헌신, 약속 | a promise or firm decision to do something | He made a _______ to finish the project on time. ## Their _______ to quality is evident in every product.
+communication | noun | 의사소통 | the exchange of information or ideas | Clear _______ is essential in any relationship. ## The company improved internal _______ between departments.
+concentration | noun | 집중, 농도 | close attention on a single task, or the amount of a substance in a mixture | Loud noise makes it hard to keep your _______. ## The _______ of salt in seawater varies by region.
+conference | noun | 회의, 학회 | a formal meeting for discussion, often on a particular topic | She presented her research at an academic _______. ## The annual _______ attracts experts from around the world.
+contrast | noun / verb | 대조, 대조하다 | a clear difference when two things are compared | There is a sharp _______ between the two paintings. ## The article _______ two very different economic models.
+cycle | noun | 순환, 주기 | a series of events that repeat regularly | The water _______ includes evaporation and rainfall. ## Each product goes through a design _______.
+debate | noun / verb | 토론, 논쟁하다 | a formal discussion of opposing viewpoints | The candidates will _______ live on television tonight. ## There is ongoing _______ about the new law.
+despite | preposition | ~에도 불구하고 | without being affected by a particular fact | _______ the rain, the game continued as planned. ## She succeeded _______ many obstacles.
+dimensions | noun | 크기, 치수 | measurable extents such as length, width, or depth | Please provide the _______ of the package. ## The problem has social and political _______.
+domestic | adjective | 국내의, 가정의 | relating to the home or one's own country | The airline offers both _______ and international flights. ## She handles most of the _______ chores.
+emerged | verb | 나타났다, 부상했다 | came into existence or became apparent | A new leader _______ after the election. ## The company _______ as a major player in the industry.
+error | noun | 오류, 실수 | a mistake | The report contained a small typing _______. ## Pilot _______ was blamed for the incident.
+ethnic | adjective | 민족의, 종족의 | relating to a group sharing a common cultural or national origin | The festival celebrates the city's _______ diversity. ## _______ tensions have existed in the region for decades.
+goals | noun | 목표 | aims or desired results | Setting clear _______ helps you stay motivated. ## The team met all of its sales _______ this year.
+granted | verb | 승인된, 부여된 | given or allowed, especially officially | Her visa application was finally _______. ## The court _______ the request for a new trial.
+hence | adverb | 그러므로, 이런 이유로 | for this reason; therefore | The bridge is closed; _______, traffic must take another route. ## Prices rose sharply, _______ fewer people could afford homes.
+hypothesis | noun | 가설 | a proposed explanation based on limited evidence, to be tested further | The scientist tested her _______ through experiments. ## Their _______ was proven wrong by the data.
+implementation | noun | 시행, 실행 | the process of putting a plan or decision into effect | The _______ of the new policy begins next month. ## Poor _______ can ruin even a good idea.
+implications | noun | 영향, 함의 | possible consequences or effects of an action | The decision has serious _______ for the economy. ## Scientists are studying the _______ of climate change.
+imposed | verb | 부과된, 강요된 | forced upon someone, often officially | The government _______ new taxes on imported goods. ## A curfew was _______ during the emergency.
+integration | noun | 통합 | the combining of parts into a unified whole | The company focused on the smooth _______ of the two systems. ## Social _______ helps immigrants adapt to a new country.
+internal | adjective | 내부의 | existing within something, rather than outside it | The company launched an _______ investigation. ## He suffered _______ injuries in the crash.
+investigation | noun | 조사, 수사 | a careful examination to discover facts | Police opened an _______ into the fire. ## The journalist conducted a thorough _______.
+job | noun | 직업, 일 | a paid position of regular employment | She found a new _______ after graduating. ## Cleaning the garage was a big _______.
+label | noun / verb | 상표, 표시하다 | a piece of information attached to identify something | Check the nutrition _______ before you buy the food. ## Please _______ each box clearly before shipping.
+mechanism | noun | 기제, 장치 | a system of parts working together, or a method for achieving a result | The lock has a simple _______. ## The government created a _______ for resolving disputes.
+obvious | adjective | 명백한 | easy to see or understand | It was _______ that she was upset. ## The solution seems _______ once you see it.
+occupational | adjective | 직업의 | relating to a person's job or profession | He suffered from an _______ illness. ## _______ safety rules protect factory workers.
+option | noun | 선택(권) | a choice among possibilities | Buying a used car is a cheaper _______. ## Please select the best _______ from the list.
+output | noun | 생산량, 산출 | the amount produced by a person, process, or system | Factory _______ increased after the new machines arrived. ## The computer's _______ appeared on the screen.
+overall | adjective / adverb | 전반적인, 전반적으로 | taking everything into account; general | The _______ quality of the product was excellent. ## _______, the trip was a success.
+parallel | adjective / noun | 평행한, 유사점 | similar in a way that allows comparison, or lines running side by side without meeting | The two roads run _______ to each other. ## There is a clear _______ between the two stories.
+parameters | noun | 매개변수, 한계 | factors that define the limits of something | The experiment was conducted within strict _______. ## Set the _______ before running the simulation.
+phase | noun | 단계 | a distinct stage in a process of change | The project is now in its final _______. ## The moon goes through different _______ each month.
+predicted | verb | 예측된 | stated in advance based on evidence or reasoning | Experts _______ a rise in unemployment. ## The weather forecast _______ heavy rain tomorrow.
+principal | adjective / noun | 주요한, 교장 | most important; a person of high rank in an organization | The _______ cause of the delay was bad weather. ## The school _______ addressed the students at assembly.
+prior | adjective | 이전의, 사전의 | existing or coming before something else | She had no _______ experience in sales. ## Please give us _______ notice before canceling.
+professional | adjective / noun | 전문적인, 전문가 | relating to a job requiring special training or skill | He gave a very _______ presentation. ## She hired a _______ to fix the plumbing.
+project | noun / verb | 프로젝트, 예상하다 | a planned piece of work with a specific goal | The team finished the _______ ahead of schedule. ## Analysts _______ strong growth next year.
+promote | verb | 촉진하다, 승진시키다 | to support or actively encourage something | The campaign aims to _______ healthy eating. ## She was _______ to manager after two years.
+regime | noun | 정권, 체제 | a system of government, or a set of conditions under which something operates | The country was ruled by a strict _______ for decades. ## He follows a strict exercise _______.
+resolution | noun | 결의, 해결 | a firm decision, or the settling of a dispute | The UN passed a _______ condemning the attack. ## Her New Year's _______ was to exercise more.
+retained | verb | 유지된, 보유된 | kept or continued to hold | The company _______ its top employees with better pay. ## She _______ her title despite the merger.
+series | noun | 연속, 시리즈 | a number of related things or events coming one after another | The TV _______ became popular worldwide. ## A _______ of accidents led to the new safety law.
+statistics | noun | 통계 | numerical facts collected and analyzed for study | The report includes crime _______ from last year. ## He studied _______ in graduate school.
+status | noun | 지위, 상태 | a person's or thing's position or condition relative to others | Please check the _______ of your order online. ## Marital _______ was listed on the form.
+stress | noun / verb | 스트레스, 강조하다 | mental or physical strain caused by demanding circumstances | Work-related _______ can affect your health. ## The coach continued to _______ the importance of teamwork.
+subsequent | adjective | 이후의, 다음의 | coming after something in time | _______ studies confirmed the original findings. ## He apologized, and _______ events proved him right.
+sum | noun | 총액, 합계 | a total amount, or a quantity of money | She won a large _______ of money in the lottery. ## Add these numbers to find the _______.
+summary | noun | 요약 | a brief statement covering the main points | Please provide a brief _______ of the report. ## The news gave a quick _______ of the day's events.
+undertaken | verb | 착수된, 수행된 | agreed to do, especially a task or responsibility | A major renovation has been _______ this year. ## The research was _______ over several years.`,
+  5: `academic | adjective | 학문적인 | relating to education, especially at an advanced or scholarly level | She has an impressive _______ background. ## The school focuses on both _______ and social development.
+adjustment | noun | 조정, 적응 | a small change made to improve or correct something | The new employee needed time to make an _______. ## A minor _______ to the schedule solved the problem.
+alter | verb | 바꾸다, 변경하다 | to change something, usually slightly | The tailor will _______ the suit to fit better. ## A small mistake can _______ the entire outcome.
+amendment | noun | 개정, 수정 | a minor change made to a law or document | Congress passed an _______ to the bill. ## The company made an _______ to the contract terms.
+aware | adjective | 알고 있는, 인식하는 | having knowledge of a situation or fact | She was not _______ of the new policy. ## Being _______ of your surroundings keeps you safe.
+capacity | noun | 수용력, 능력 | the maximum amount something can hold or produce, or the ability to do something | The stadium has a seating _______ of fifty thousand. ## He has the _______ to learn quickly.
+challenge | noun / verb | 어려움, 이의를 제기하다 | a task that tests someone's abilities, or to question something | Learning a new language is a real _______. ## Lawyers plan to _______ the court's decision.
+clause | noun | 조항, 절 | a section of a legal document, or a grammatical unit containing a subject and verb | The contract includes a cancellation _______. ## Add a relative _______ to combine the two sentences.
+compounds | noun | 화합물 | substances made of two or more combined elements | Water is one of the most common chemical _______. ## Scientists discovered several new _______ in the sample.
+conflict | noun | 갈등, 충돌 | a serious disagreement or clash | The two nations have been in _______ for years. ## Personal _______ can hurt team performance.
+consultation | noun | 상담, 협의 | a meeting to discuss something or seek advice | She scheduled a _______ with a lawyer. ## The plan was created after wide public _______.
+contact | noun / verb | 접촉, 연락하다 | communication between people, or physical touching | Please _______ me if you have any questions. ## They lost _______ after moving to different cities.
+decline | noun / verb | 감소, 거절하다 | a gradual decrease, or to politely refuse | Sales showed a steady _______ over the year. ## She had to _______ the invitation due to work.
+discretion | noun | 신중함, 판단력 | the freedom to decide or judge something on one's own | The manager has full _______ over hiring decisions. ## Please use _______ when sharing this information.
+draft | noun / verb | 초안, 초안을 작성하다 | a preliminary version of a piece of writing | She sent me the first _______ of her essay. ## He will _______ a new proposal by Friday.
+enable | verb | 가능하게 하다 | to give someone the ability or means to do something | This app will _______ users to track their spending. ## The grant will _______ the school to buy new computers.
+energy | noun | 에너지 | the power to do work or cause change, from a physical or figurative source | Solar panels convert sunlight into _______. ## She has so much _______ in the morning.
+enforcement | noun | 집행, 시행 | making sure a law or rule is obeyed | Law _______ officers responded quickly to the scene. ## Strict _______ of the rules reduced accidents.
+entities | noun | 독립체, 실체 | things that exist independently and can be distinctly identified | The two companies remain separate legal _______. ## The report treats each department as a distinct _______.
+equivalent | adjective / noun | 동등한, 상응하는 것 | equal in value, meaning, or importance | One mile is _______ to about 1.6 kilometers. ## There is no exact _______ for this word in English.
+evolution | noun | 진화, 발전 | gradual development over time, especially of species | Darwin's theory of _______ changed biology forever. ## The _______ of technology has been rapid.
+expansion | noun | 확장 | the process of becoming larger | The company announced plans for rapid _______. ## Metal _______ occurs when it is heated.
+exposure | noun | 노출 | the state of being subjected to something, such as risk or influence | Long _______ to the sun can damage your skin. ## Media _______ boosted the singer's popularity.
+external | adjective | 외부의 | coming from or existing outside something | The building's _______ walls need repainting. ## The company hired an _______ auditor.
+facilitate | verb | 촉진하다, 용이하게 하다 | to make an action or process easier | The new software will _______ faster communication. ## A translator was hired to _______ the meeting.
+fundamental | adjective | 근본적인 | forming a necessary base or core part of something | Trust is _______ to any relationship. ## The book explains the _______ principles of physics.
+generated | verb | 발생시킨, 만들어낸 | produced or brought into existence | The wind turbine _______ enough power for the village. ## Her comment _______ a lot of discussion online.
+generation | noun | 세대, 생성 | all the people born and living around the same time, or the production of something | My grandparents belong to a different _______. ## The plant is designed for the _______ of clean energy.
+image | noun | 이미지, 상 | a picture, or a person's or organization's public impression | The magazine used a striking _______ on its cover. ## The company worked hard to improve its public _______.
+liberal | adjective | 자유주의적인, 관대한 | open to new ideas, or favoring individual freedom and reform | She holds fairly _______ political views. ## The teacher took a _______ approach to grading.
+licence | noun | 면허, 자격증 | official permission to do, use, or own something | You need a _______ to drive a car. ## The restaurant lost its liquor _______ last year.
+logic | noun | 논리 | reasoning conducted according to strict principles of validity | His argument was based on sound _______. ## There's no _______ in blaming her for the mistake.
+marginal | adjective | 미미한, 주변부의 | small in importance or size; at the edge or limit | The new policy had only a _______ effect on prices. ## Farmers struggled to grow crops on _______ land.
+medical | adjective | 의학적인 | relating to the treatment of illness and injury | She needs _______ attention right away. ## The clinic offers free _______ checkups.
+mental | adjective | 정신적인 | relating to the mind | Regular exercise can improve your _______ health. ## The puzzle requires quick _______ arithmetic.
+modified | verb / adjective | 수정된 | changed in a partial way | The recipe was _______ to reduce the sugar content. ## They drove a _______ version of the original car.
+monitoring | verb / noun | 감시, 관찰 | observing and checking something over a period of time | Doctors are _______ her recovery closely. ## Constant _______ of water quality is required.
+network | noun | 네트워크, 망 | a system of interconnected people or things | She built a strong professional _______ over the years. ## The company's computer _______ crashed overnight.
+notion | noun | 개념, 생각 | an idea or belief about something | He rejected the _______ that money brings happiness. ## The novel explores the _______ of identity.
+objective | noun / adjective | 목표, 객관적인 | a goal one is trying to achieve, or unaffected by personal opinion | The main _______ of the meeting was to cut costs. ## Try to remain _______ when judging the contest.
+orientation | noun | 방향, 오리엔테이션 | a person's basic attitude or beliefs, or the direction something faces | New employees attend an _______ session on their first day. ## The building's _______ allows for maximum sunlight.
+perspective | noun | 관점, 시각 | a particular way of viewing something, shaped by one's position or experience | Traveling gave her a new _______ on life. ## Try to see the issue from his _______.
+precise | adjective | 정확한 | exact and accurate | She gave a _______ description of the suspect. ## Scientists need _______ measurements for the experiment.
+prime | adjective | 최고의, 주요한 | of the greatest importance, or occurring first in time | This is a _______ example of good design. ## The property is in a _______ location downtown.
+psychology | noun | 심리학 | the scientific study of the mind and behavior | She's majoring in _______ at college. ## Understanding customer _______ helps businesses sell more.
+pursue | verb | 추구하다 | to follow or work toward a goal | He decided to _______ a career in medicine. ## Police continued to _______ the suspect through the city.
+ratio | noun | 비율 | a relationship between two quantities expressed as a proportion | The recipe calls for a two-to-one _______ of flour to sugar. ## The student-to-teacher _______ improved this year.
+rejected | verb | 거부된, 거절된 | refused to accept | Her job application was _______ without an interview. ## The committee _______ the proposed budget.
+revenue | noun | 수익, 세입 | income generated from business activity | The company's _______ grew by ten percent last year. ## Tax _______ funds most public schools.
+stability | noun | 안정성 | the state of being firm, steady, and unlikely to change suddenly | Political _______ attracted foreign investors. ## The new legs gave the table more _______.
+styles | noun | 스타일, 양식 | distinctive ways of doing or presenting something | The gallery displayed art from many different _______. ## Everyone has their own learning _______.
+substitution | noun | 대체, 교체 | the act of replacing one thing with another | The coach made a _______ in the second half. ## You can try a simple ingredient _______ in the recipe.
+sustainable | adjective | 지속 가능한 | able to be maintained at a certain level without depleting resources | The farm uses _______ methods to protect the soil. ## The company invested in _______ energy sources.
+symbolic | adjective | 상징적인 | representing something else, often an idea or quality | The dove is a _______ image of peace. ## The ceremony was mostly _______, with no real legal effect.
+target | noun / verb | 목표, 표적으로 하다 | an objective or result someone aims to achieve | The company set a sales _______ for the quarter. ## The ad campaign will _______ young adults.
+transition | noun | 전환, 이행 | the process of changing from one state to another | The _______ from school to work can be difficult. ## The country is in _______ to a new government.
+trend | noun | 동향, 추세 | a general direction in which something is developing | Fashion _______ change from year to year. ## There's a growing _______ toward remote work.
+version | noun | 버전, 형태 | a particular form of something that differs from other forms | Please download the latest _______ of the app. ## Her _______ of events was different from his.
+welfare | noun | 복지 | the health, happiness, and safety of a person or group | The charity works to improve child _______. ## Animal _______ groups protested the new law.
+whereas | conjunction | 반면에 | in contrast with the fact that; while on the other hand | She loves the city, _______ he prefers the countryside. ## The old model was slow, _______ the new one is fast.`,
+  6: `abstract | adjective / noun | 추상적인, 요약 | existing as an idea rather than a physical thing; a summary of a longer work | Love is an _______ concept that's hard to define. ## Please submit an _______ of your research paper.
+accurate | adjective | 정확한 | correct in all details; exact | The weather forecast was surprisingly _______. ## She gave an _______ account of what happened.
+acknowledged | verb | 인정된, 인정한 | recognized or admitted as being true or existing | He _______ that he had made a mistake. ## The report _______ several weaknesses in the plan.
+aggregate | noun / adjective | 총합, 집합의 | a total formed by combining several separate items | The _______ score determined the winner. ## Sales figures are shown in _______ form.
+allocation | noun | 배분, 할당 | the distribution of resources for a particular purpose | The budget _______ favors education this year. ## Each department received its _______ of funds.
+assigned | verb | 배정된, 할당된 | given a specific task or role | She was _______ to lead the new project. ## Each student was _______ a partner for the assignment.
+attached | verb / adjective | 첨부된, 애착이 있는 | physically joined, or emotionally connected | Please see the file _______ to this email. ## He became very _______ to his childhood home.
+author | noun | 작가, 저자 | a writer of a book or other work | She is the _______ of several bestselling novels. ## The _______ signed copies of her book at the event.
+bond | noun | 유대, 채권 | a strong connection, or a financial certificate representing debt | The two sisters share a close _______. ## He invested his savings in government _______.
+brief | adjective / noun | 짧은, 요약 설명 | short in duration, or a short summary of instructions | She gave a _______ but clear explanation. ## The lawyer prepared a legal _______ for the case.
+capable | adjective | ~할 수 있는, 유능한 | having the ability or qualities needed to do something | She is fully _______ of handling the job. ## The new engine is _______ of much higher speeds.
+cited | verb | 인용된 | quoted or referred to as evidence or an example | The article _______ several recent studies. ## He was _______ for speeding on the highway.
+cooperative | adjective | 협력적인 | involving mutual assistance in working toward a shared goal | The two nations signed a _______ trade agreement. ## She has always been _______ with her coworkers.
+discrimination | noun | 차별 | unfair treatment based on a category such as race or gender | The law protects workers from _______. ## He filed a complaint about age _______ at work.
+display | noun / verb | 전시, 전시하다 | to show something publicly, or a public exhibition | The museum has a new _______ of ancient artifacts. ## Please _______ your ID badge at all times.
+diversity | noun | 다양성 | the state of including many different types of people or things | The company values _______ in its workforce. ## The rainforest is known for its biological _______.
+domain | noun | 영역, 분야 | an area of activity, knowledge, or control | Marketing falls within her _______ of expertise. ## He registered a new website _______ last week.
+edition | noun | 판, 호 | a particular version of a published work | The book is now in its third _______. ## She collects first _______ novels.
+enhanced | verb / adjective | 강화된, 향상된 | improved in quality, value, or extent | The update _______ the app's security features. ## The photo was digitally _______ before printing.
+estate | noun | 부동산, 재산 | a large area of privately owned land, or a person's total property | The family owns a large country _______. ## Her entire _______ was left to her children.
+exceed | verb | 초과하다, 넘다 | to go beyond a limit or expectation | The car's speed can _______ 200 kilometers per hour. ## Sales figures _______ our expectations this quarter.
+expert | noun / adjective | 전문가, 전문적인 | a person with extensive knowledge or skill in a particular area | She consulted an _______ before making the decision. ## He gave _______ advice on investing.
+explicit | adjective | 명백한, 명시적인 | stated clearly and in detail, leaving no room for doubt | The instructions were very _______ about the deadline. ## She gave _______ permission for the photo to be used.
+federal | adjective | 연방의 | relating to a system in which states share power with a central government | The _______ government sets national tax policy. ## He works for a _______ agency in Washington.
+fees | noun | 요금, 수수료 | amounts of money paid for a service | Tuition _______ increase every year. ## The bank charges monthly account _______.
+flexibility | noun | 유연성 | the ability to adapt or change easily | Remote work offers greater _______ for employees. ## Yoga improves both strength and _______.
+furthermore | adverb | 게다가, 더욱이 | in addition; moreover | The plan is expensive; _______, it may not even work. ## She is talented, and _______, hardworking.
+gender | noun | 성별 | the state of being male or female, especially with reference to social and cultural roles | The survey asked about age and _______. ## The company promotes _______ equality in hiring.
+ignored | verb | 무시된, 무시한 | deliberately paid no attention to | He _______ the warning signs and kept driving. ## Her complaint was completely _______ by management.
+incentive | noun | 인센티브, 동기 | something that encourages a person to act in a particular way | The company offers a cash _______ for referrals. ## Lower taxes can act as an _______ to invest.
+incidence | noun | 발생률 | the rate at which something occurs | The _______ of the disease has dropped sharply. ## There was a high _______ of accidents on that road.
+incorporated | verb / adjective | 포함된, 법인화된 | included as part of a whole | The new safety features were _______ into the design. ## The business became _______ as a private company.
+index | noun | 색인, 지수 | an alphabetical list, or a number indicating a level relative to a standard | Check the back of the book for the _______. ## The stock _______ rose sharply today.
+inhibition | noun | 억제, 자제 | a feeling that makes someone unable to act naturally, or a restraining process | A little wine can lower your _______. ## The drug works by _______ of a specific enzyme.
+initiatives | noun | 계획, 방안 | new plans or actions intended to solve a problem | The city launched several green _______ this year. ## Employee _______ led to major cost savings.
+input | noun | 입력, 조언 | something put into a system or process | We welcome your _______ on the new design. ## The computer requires manual data _______.
+instructions | noun | 설명서, 지시 | detailed information on how to do something | Please read the _______ before assembling the furniture. ## She gave clear _______ to the new staff.
+intelligence | noun | 지능, 정보 | the ability to acquire and apply knowledge and skills | Artificial _______ is changing many industries. ## The agency gathered _______ on the suspects.
+interval | noun | 간격 | a period of time between two events | There was a short _______ between the two songs. ## Check your blood pressure at regular _______.
+lecture | noun / verb | 강의, 강의하다 | an educational talk given to an audience | The professor gave a fascinating _______ on ancient Rome. ## He likes to _______ his students about punctuality.
+migration | noun | 이주, 이동 | the movement of people or animals from one place to another | Birds begin their _______ south in autumn. ## Rural-to-urban _______ has changed the city's population.
+minimum | noun / adjective | 최소한의, 최저치 | the smallest amount possible or required | The job requires a _______ of two years' experience. ## Please pay the _______ balance by Friday.
+ministry | noun | 부처, 성직 | a government department, or religious service | The _______ of Education announced new school guidelines. ## He entered the _______ after finishing seminary.
+motivation | noun | 동기, 의욕 | the reason or enthusiasm behind a person's actions | Lack of _______ made it hard for him to study. ## Her main _______ was to help others.
+neutral | adjective | 중립적인 | not supporting either side in a conflict or disagreement | Switzerland remained _______ during the war. ## Try to stay _______ when mediating a dispute.
+nevertheless | adverb | 그럼에도 불구하고 | in spite of that; even so | The task was difficult; _______, she completed it on time. ## He was tired, but _______ he kept working.
+overseas | adjective / adverb | 해외의, 해외로 | in or to a foreign country, across the sea | She accepted a job _______ after graduation. ## The company expanded its _______ operations.
+preceding | adjective | 이전의, 앞선 | coming before something in time or order | Refer to the _______ chapter for more details. ## Sales rose compared to the _______ year.
+presumption | noun | 추정, 가정 | an assumption made without proof | The law is based on the _______ of innocence. ## It was a fair _______ that he would arrive late.
+rational | adjective | 이성적인, 합리적인 | based on clear reason or logic | Try to make a _______ decision, not an emotional one. ## His argument seemed perfectly _______ to me.
+recovery | noun | 회복 | a return to a normal state after difficulty | Her _______ from surgery took several weeks. ## The economy showed signs of _______ last quarter.
+revealed | verb | 드러난, 밝혀진 | made known something previously hidden | The investigation _______ several hidden accounts. ## She finally _______ the truth to her family.
+scope | noun | 범위 | the range of matters that something deals with | The report's _______ was limited to one region. ## We need to expand the _______ of the investigation.
+subsidiary | noun / adjective | 자회사, 부수적인 | a company controlled by another, larger company | The car company is a _______ of a larger conglomerate. ## This is a _______ concern compared to safety.
+tapes | noun | 테이프 | strips of magnetic material used for recording, or strips used for binding | Old recording _______ can degrade over time. ## The package was sealed with strong _______.
+trace | noun / verb | 흔적, 추적하다 | a very small amount, or to find the origin of something | Investigators found no _______ of the missing documents. ## Genealogists _______ family histories back centuries.
+transformation | noun | 변화, 변신 | a complete change in form or nature | The city underwent a remarkable _______ in ten years. ## Her _______ from shy student to confident speaker was inspiring.
+transport | noun / verb | 운송, 운송하다 | the movement of people or goods from one place to another | Public _______ in the city is cheap and reliable. ## Trucks _______ goods across the country.
+underlying | adjective | 근본적인, 기저의 | forming the basis of something, often not immediately obvious | Doctors searched for the _______ cause of her symptoms. ## There is an _______ tension between the two groups.
+utility | noun | 유용성, 공공 시설 | usefulness, or a public service such as electricity or water | The tool's _______ lies in its simplicity. ## Water is considered an essential public _______.`,
+  7: `adaptation | noun | 적응 | the process of adjusting to new conditions | The book was made into a film _______. ## Animals rely on _______ to survive in harsh climates.
+adults | noun | 성인 | fully grown or mature people | The class is designed for both children and _______. ## Most _______ need about eight hours of sleep.
+advocate | noun / verb | 옹호자, 지지하다 | to publicly support a cause, or a person who does so | She is a strong _______ for animal rights. ## Doctors _______ regular exercise for good health.
+aid | noun / verb | 지원, 돕다 | help or support, especially financial or material | The country received foreign _______ after the disaster. ## This app will _______ you in learning new words.
+channel | noun | 경로, 채널 | a means of communication, or a path for something to flow through | She used official _______ to file her complaint. ## Water flows through a narrow _______ into the field.
+chemical | adjective / noun | 화학의, 화학 물질 | relating to substances and their interactions and changes | The factory produces various _______ products. ## Some cleaning _______ should never be mixed together.
+classical | adjective | 고전의, 고전적인 | relating to ancient Greek or Roman culture, or traditional and long established | She studied _______ literature in college. ## He prefers _______ music to modern pop.
+comprehensive | adjective | 포괄적인 | including everything that is necessary or relevant | The report offers a _______ overview of the market. ## She received _______ medical care after the accident.
+comprise | verb | 구성하다 | to consist of; to be made up of | Women _______ nearly half of the workforce. ## The committee will _______ ten members.
+confirmed | verb / adjective | 확인된 | established as true or definite | The doctor _______ that she had recovered fully. ## Officials _______ the death toll had risen.
+contrary | adjective / noun | 반대의, 반대 | opposite in nature or direction | _______ to popular belief, the plan actually worked. ## He did the exact _______ of what was suggested.
+converted | verb | 전환된 | changed from one form, use, or belief to another | The old factory was _______ into apartments. ## He _______ to a different religion as an adult.
+couple | noun | 부부, 몇몇 | two people or things considered together | The young _______ just bought their first home. ## I'll be back in a _______ of minutes.
+decades | noun | 수십 년 | periods of ten years | The city has changed dramatically over the past few _______. ## He has worked at the same company for _______.
+definite | adjective | 확실한, 명확한 | clearly stated or decided; certain | We need a _______ answer by tomorrow. ## There is a _______ improvement in her health.
+deny | verb | 부인하다 | to state that something is not true | The suspect continued to _______ any involvement. ## She couldn't _______ that she was nervous.
+differentiation | noun | 차별화, 구별 | the process of recognizing or creating a difference between things | Product _______ helps a brand stand out. ## Cell _______ occurs during early development.
+disposal | noun | 처리, 처분 | the act of getting rid of something | Proper waste _______ protects the environment. ## The company handles hazardous material _______.
+dynamic | adjective | 동적인, 활발한 | constantly changing or active; full of energy | The city has a _______ and diverse culture. ## She has a _______ personality that draws people in.
+eliminate | verb | 제거하다 | to remove or get rid of completely | The new process will _______ unnecessary steps. ## Vaccines helped _______ the disease almost entirely.
+empirical | adjective | 경험적인, 실증적인 | based on observation or experience rather than theory | The theory needs _______ evidence to be accepted. ## Researchers gathered _______ data through field studies.
+equipment | noun | 장비 | the items needed for a particular activity | The gym has excellent exercise _______. ## They rented camping _______ for the trip.
+extract | verb / noun | 추출하다, 추출물 | to remove or take out, often with effort | Dentists sometimes need to _______ a damaged tooth. ## The recipe calls for a bit of vanilla _______.
+file | noun / verb | 파일, 제출하다 | a collection of documents, or a folder for storing them | Please save the _______ before closing the program. ## She plans to _______ a complaint with HR.
+finite | adjective | 유한한 | having limits or bounds; not infinite | Natural resources on Earth are _______. ## We only have a _______ amount of time to finish.
+foundation | noun | 기초, 재단 | the basis on which something is built, or an organization that funds projects | Trust forms the _______ of any good relationship. ## The charity is funded by a private _______.
+global | adjective | 세계적인, 지구의 | relating to the whole world | Climate change is a _______ problem. ## The company has a strong _______ presence.
+grade | noun | 등급, 성적 | a level of quality or rank, or a mark given for schoolwork | She got a top _______ on her final exam. ## This restaurant only serves premium _______ beef.
+guarantee | noun / verb | 보증, 보장하다 | a firm promise that something will happen | The product comes with a two-year _______. ## Hard work doesn't always _______ success.
+hierarchical | adjective | 계층적인 | arranged in ranks or levels of authority | The company has a very _______ management structure. ## Ants live in a strictly _______ colony.
+identical | adjective | 동일한 | exactly the same | The twins looked almost _______. ## Both reports reached _______ conclusions.
+ideology | noun | 이념 | a set of beliefs that guides a person or movement | The party's _______ shaped its economic policies. ## Political _______ often divides voters sharply.
+inferred | verb | 추론된 | worked out from evidence and reasoning rather than stated directly | From her tone, I _______ that she was upset. ## The meaning was _______ rather than stated directly.
+innovation | noun | 혁신 | the introduction of new ideas or methods | The smartphone was a major technological _______. ## The company rewards employees for creative _______.
+insert | verb | 삽입하다 | to put something into something else | Please _______ your card to begin the transaction. ## She decided to _______ a new paragraph into the essay.
+intervention | noun | 개입, 중재 | an action taken to improve a situation or prevent something | Early medical _______ can save lives. ## The UN called for diplomatic _______ in the conflict.
+isolated | verb / adjective | 고립된 | separated from other things or people | The village remained _______ during the storm. ## Scientists _______ the gene responsible for the trait.
+media | noun | 언론, 매체 | the main means of mass communication, such as TV and the internet | Social _______ has changed how people get news. ## The scandal received heavy _______ coverage.
+mode | noun | 방식, 모드 | a particular way or manner of operating | Switch the phone to airplane _______ before takeoff. ## Walking is her preferred _______ of transportation.
+paradigm | noun | 패러다임, 전형 | a typical example or pattern of something | The discovery created a new scientific _______. ## Remote work represents a _______ shift in employment.
+phenomenon | noun | 현상 | a fact or situation observed to exist, especially one that is unusual or notable | The northern lights are a beautiful natural _______. ## Social media influencers are a modern cultural _______.
+priority | noun | 우선 사항 | something considered more important than other things | Safety is our top _______. ## She had to set her _______ straight before the deadline.
+prohibited | verb | 금지된 | officially forbidden | Smoking is _______ in all public buildings. ## The sign said fishing was _______ in this area.
+publication | noun | 출판, 출판물 | the act of publishing something, or a published work | The _______ of her novel was delayed by a year. ## The magazine is a well-respected scientific _______.
+quotation | noun | 인용문, 견적 | a phrase or passage repeated exactly from another source | She opened her speech with a famous _______. ## We received a _______ for the repair work.
+release | verb / noun | 공개하다, 출시 | to set free, or to make information or a product available | The band will _______ a new album next month. ## The prisoner's _______ date was announced today.
+reverse | verb / adjective | 뒤바꾸다, 반대의 | to move backward, or to change something to its opposite | The court decided to _______ its earlier ruling. ## Read the instructions in _______ order.
+simulation | noun | 모의실험, 시뮬레이션 | an imitation of a situation or process for study or training | Pilots train using a flight _______. ## The company ran a _______ to test the new system.
+solely | adverb | 오로지, 단지 | only; exclusively | The decision was made _______ by the board. ## He works _______ on weekends now.
+somewhat | adverb | 다소, 약간 | to some extent; rather | The results were _______ surprising. ## She felt _______ better after resting.
+submitted | verb | 제출된 | presented for consideration or judgment | She _______ her application before the deadline. ## The report was _______ to the committee for review.
+successive | adjective | 연속적인 | following one after another without interruption | The team won three _______ championships. ## Rain fell for five _______ days.
+survive | verb | 생존하다 | to continue to live or exist, especially after a difficult event | Few animals can _______ in such extreme cold. ## The old tradition managed to _______ for centuries.
+thesis | noun | 논문, 주장 | a long piece of academic writing on a particular subject, or a proposed argument | She spent a year writing her master's _______. ## His central _______ is that culture shapes behavior.
+topic | noun | 주제 | a subject discussed or written about | Climate change was the main _______ of the debate. ## Please choose a _______ for your research paper.
+transmission | noun | 전송, 전달 | the sending of something from one place or person to another | The virus's _______ can be reduced by washing hands. ## Data _______ speeds have improved greatly.
+ultimately | adverb | 결국 | finally; in the end | The plan, _______, was rejected by the board. ## Hard work will _______ pay off.
+unique | adjective | 독특한 | being the only one of its kind | Every snowflake is _______ in its pattern. ## She has a _______ talent for storytelling.
+visible | adjective | 보이는 | able to be seen | The mountain was clearly _______ from the hotel window. ## Stars are barely _______ in the city due to light pollution.
+voluntary | adjective | 자발적인 | done willingly, without being forced or paid | She does _______ work at the animal shelter. ## Attendance at the meeting is completely _______.`,
+  8: `abandon | verb | 버리다, 포기하다 | to give up on something completely | They had to _______ the sinking ship. ## He refused to _______ his dream of becoming a musician.
+accompanied | verb | 동반된 | went along with, or occurred together with | The announcement was _______ by a formal apology. ## Her parents _______ her to the interview.
+accumulation | noun | 축적 | a gradual increase in quantity through continuous addition | Years of _______ turned into a huge collection. ## The _______ of debt eventually forced the company to close.
+ambiguous | adjective | 모호한 | having more than one possible meaning; unclear | The instructions were _______ and confused everyone. ## His answer was deliberately _______.
+appendix | noun | 부록 | additional material at the end of a book or document | See the _______ for a full list of sources. ## The report's data tables are included in the _______.
+appreciation | noun | 감사, 감상 | recognition of the value or significance of something | She showed her _______ with a heartfelt thank-you note. ## He has a deep _______ for classical art.
+arbitrary | adjective | 임의적인 | based on random choice rather than reason or system | The decision seemed completely _______ to the staff. ## The rule felt _______ and unfair.
+automatically | adverb | 자동으로 | without conscious thought or direct control | The lights turn on _______ at sunset. ## Your subscription will renew _______ each month.
+bias | noun | 편견 | an unfair preference for or against something | The judge was accused of _______ toward one side. ## Media outlets are sometimes criticized for political _______.
+chart | noun | 도표, 차트 | a diagram displaying information, often with lines or bars | The teacher drew a _______ to show the results. ## Sales are presented in a simple bar _______.
+clarity | noun | 명료함 | the quality of being clear and easy to understand | Her explanation was praised for its _______. ## The new lens improved the image's _______.
+commodity | noun | 상품, 원자재 | a raw material or product that can be bought and sold | Oil is a valuable global _______. ## Coffee prices fluctuate like any other _______.
+complement | noun / verb | 보완하는 것, 보완하다 | something that completes or enhances something else | The wine was a perfect _______ to the meal. ## Good design should _______ a building's function.
+conformity | noun | 순응, 따름 | behavior in accordance with accepted standards | The uniform ensures _______ among students. ## He struggled to live in _______ with strict family rules.
+contemporary | adjective | 현대의, 동시대의 | belonging to the present time, or existing at the same time as something else | The museum features _______ art from young artists. ## The novel is set in a _______ American city.
+contradiction | noun | 모순 | a statement or situation in direct opposition to another | There's a clear _______ between his two statements. ## Her calm exterior was a _______ to her anxious thoughts.
+crucial | adjective | 매우 중요한 | extremely important or necessary | Sleep is _______ for good health. ## This decision is _______ to the company's future.
+currency | noun | 화폐, 통화 | the money used in a particular country | The local _______ weakened against the dollar. ## Tourists exchanged their _______ at the airport.
+denote | verb | 나타내다, 의미하다 | to be a sign of; to indicate | The red flag _______ danger ahead. ## A comma can _______ a brief pause in speech.
+detected | verb | 감지된 | discovered or noticed, especially something hidden or hard to perceive | The scanner _______ a small crack in the pipe. ## Doctors _______ the illness early enough to treat it.
+deviation | noun | 이탈, 편차 | a departure from the usual or expected course | Any _______ from the plan must be approved first. ## The data showed a large standard _______.
+displacement | noun | 이동, 대체 | the moving of something from its usual position | War caused the _______ of thousands of families. ## The ship's _______ determines how much water it displaces.
+dramatic | adjective | 극적인 | sudden and striking; relating to plays or theatrical effect | There was a _______ improvement in her health. ## He gave a rather _______ performance on stage.
+eventually | adverb | 결국 | in the end, after a period of time or delay | She _______ found a job she loved. ## The traffic cleared up _______.
+exhibit | verb / noun | 전시하다, 전시품 | to display publicly, or an item on public display | The gallery will _______ new paintings next month. ## The dinosaur _______ is the museum's most popular attraction.
+exploitation | noun | 착취 | the act of using something, especially unfairly, for one's own benefit | Workers protested against unfair _______. ## The film exposes the _______ of child labor.
+fluctuations | noun | 변동 | irregular rises and falls in number or amount | Currency _______ affected the company's profits. ## Doctors monitored her blood pressure _______.
+guidelines | noun | 지침 | general rules or advice on how something should be done | The government issued new health _______. ## Please follow the style _______ for this report.
+highlighted | verb | 강조된 | given special attention or emphasis | The report _______ several major risks. ## She _______ the key points in yellow.
+implicit | adjective | 암묵적인 | implied without being directly stated | There was an _______ agreement between the two friends. ## His silence carried an _______ warning.
+induced | verb | 유도된, 유발된 | caused or brought about | The medication _______ a deep sleep. ## Stress can be _______ by a heavy workload.
+inevitably | adverb | 필연적으로 | in a way that cannot be avoided | Prices will _______ rise as demand increases. ## Mistakes will _______ happen during training.
+infrastructure | noun | 기반 시설 | the basic physical systems a society needs to function, such as roads and utilities | The city invested heavily in public _______. ## The storm damaged much of the region's _______.
+inspection | noun | 검사, 점검 | a careful examination of something | The building passed its annual safety _______. ## Customs officials conducted a thorough _______.
+intensity | noun | 강도 | the extreme degree of strength, force, or feeling | The storm's _______ increased overnight. ## She trains with great _______ every day.
+manipulation | noun | 조작 | skillful or unfair handling or control of something | The photo showed signs of digital _______. ## He accused the media of emotional _______.
+minimised | verb | 최소화된 | reduced to the smallest possible amount | Risks were _______ through careful planning. ## The company _______ costs by cutting unnecessary expenses.
+nuclear | adjective | 원자력의, 핵의 | relating to the nucleus of an atom, or to nuclear weapons and energy | The country operates several _______ power plants. ## World leaders discussed _______ disarmament.
+offset | verb | 상쇄하다 | to balance out one effect with an opposing one | The company planted trees to _______ its carbon emissions. ## Any losses will be _______ by future gains.
+paragraph | noun | 단락 | a distinct section of writing dealing with a particular idea | Start a new _______ for each main idea. ## The final _______ summarizes the whole essay.
+plus | preposition / conjunction | 게다가, 더하여 | in addition to; with the addition of | The trip includes flights _______ hotel accommodation. ## The job pays well, _______ it offers great benefits.
+practitioners | noun | 실무자, 개업의 | people who work in a particular profession | Medical _______ must complete years of training. ## The workshop was designed for legal _______.
+predominantly | adverb | 주로 | mostly; for the most part | The audience was _______ young adults. ## The region is _______ agricultural.
+prospect | noun | 가능성, 전망 | the possibility that something will happen in the future | The job offers good career _______. ## She wasn't thrilled by the _______ of moving again.
+radical | adjective | 근본적인, 급진적인 | relating to fundamental change; extreme | The company made _______ changes to its business model. ## His _______ political views surprised his family.
+random | adjective | 무작위의 | without a definite pattern or plan | The winner was chosen at _______. ## The survey used a _______ sample of the population.
+reinforced | verb | 강화된 | strengthened or made more solid | The bridge was _______ to support heavier traffic. ## Her confidence was _______ by the positive feedback.
+restore | verb | 복원하다, 회복시키다 | to bring something back to its former state | Workers spent years trying to _______ the old castle. ## The medicine helped _______ his energy.
+revision | noun | 수정, 검토 | a change made to correct or improve something | The essay needs one more _______ before it's ready. ## The textbook is now in its second _______.
+schedule | noun / verb | 일정, 일정을 잡다 | a plan of activities and their times | Please check the train _______ before you leave. ## Let's _______ a meeting for next Tuesday.
+tension | noun | 긴장 | a feeling of strain or unease, or physical tightness | There was noticeable _______ in the room after the announcement. ## The rope needs more _______ to hold the weight.
+termination | noun | 종료, 해지 | the ending of something | The contract allows for early _______ under certain conditions. ## His sudden _______ from the job surprised everyone.
+theme | noun | 주제 | a subject or idea running through a piece of work | Loss is a recurring _______ in her poetry. ## The party had a tropical _______.
+thereby | adverb | 그렇게 함으로써 | by that means; as a result of that | She studied every night, _______ improving her grades. ## The bridge was closed, _______ causing major delays.
+uniform | adjective / noun | 균일한, 제복 | not changing in form; a distinctive set of clothing worn by members of a group | The paint was applied in a _______ layer. ## Students must wear a school _______.
+vehicle | noun | 차량, 수단 | a machine used for transporting people or goods | The delivery _______ broke down on the highway. ## Art can be a powerful _______ for social change.
+via | preposition | ~을 통해 | by way of; through | We traveled to Rome _______ Paris. ## Please send the documents _______ email.
+virtually | adverb | 거의, 사실상 | almost entirely; for practical purposes | The two designs are _______ identical. ## The store was _______ empty on a weekday morning.
+visual | adjective | 시각적인 | relating to seeing or sight | The presentation included several helpful _______ aids. ## She has a strong _______ memory.
+widespread | adjective | 널리 퍼진 | found or distributed over a large area | The drought caused _______ crop failure. ## There was _______ support for the new law.`,
+  9: `accommodation | noun | 숙박, 거처 | a place to live or stay, or the process of adapting to something | The tour package includes flights and _______. ## The school offers special _______ for students with disabilities.
+analogous | adjective | 유사한 | comparable in certain respects to something else | The heart's function is _______ to a pump. ## Her situation is _______ to one I faced years ago.
+anticipated | verb | 예상된 | expected or predicted in advance | Sales exceeded the _______ figures. ## We _______ some delays due to the weather.
+assurance | noun | 확신, 보증 | a positive declaration meant to give confidence | The manager gave her _______ that the issue would be fixed. ## He spoke with great _______ during the interview.
+attained | verb | 달성된 | achieved or reached, usually after effort | She finally _______ her lifelong goal. ## The company _______ record profits this year.
+behalf | noun | ~을 대신하여 | in the interest of someone else, as their representative | The lawyer spoke on _______ of her client. ## He accepted the award on _______ of the whole team.
+bulk | noun | 대부분, 대량 | the majority or largest part of something | The _______ of the work is already finished. ## Buying in _______ saves money.
+ceases | verb | 멈추다, 중단하다 | stops or comes to an end | The noise finally _______ after midnight. ## Production _______ once the factory closes.
+coherence | noun | 일관성 | the quality of being logically connected and consistent | The essay lacked _______ between paragraphs. ## Good editing improves a story's _______.
+coincide | verb | 일치하다, 동시에 일어나다 | to happen at the same time, or to be in the same position | Her birthday happens to _______ with a national holiday. ## The two events _______ almost every year.
+commenced | verb | 시작된 | began or started | Construction _______ on schedule last month. ## The trial _______ with opening statements.
+incompatible | adjective | 호환되지 않는, 양립할 수 없는 | unable to exist or work together | The new software is _______ with older computers. ## Their personalities proved to be _______.
+concurrent | adjective | 동시의 | happening or existing at the same time | He is serving two _______ prison sentences. ## The two conferences ran on _______ dates.
+confined | verb / adjective | 국한된, 갇힌 | kept within limits, or restricted to a particular space | The illness left him _______ to his bed for weeks. ## The problem is not _______ to one department.
+controversy | noun | 논쟁 | prolonged public disagreement or debate | The new policy sparked national _______. ## Her comments caused quite a _______.
+conversely | adverb | 반대로 | in a way that is opposite to what has been stated | Some people work best under pressure; _______, others need calm. ## Higher prices reduce demand; _______, lower prices increase it.
+device | noun | 장치, 기기 | a piece of equipment designed for a specific purpose | She charges her _______ every night. ## The safety _______ automatically shuts off the machine.
+devoted | adjective | 헌신적인 | very loyal or committed to someone or something | He remained _______ to his family throughout his life. ## She is completely _______ to her research.
+diminished | verb | 줄어든, 감소된 | made or become smaller or less | His influence _______ after the scandal. ## Her enthusiasm never _______ despite the setbacks.
+distorted | verb / adjective | 왜곡된 | pulled or twisted out of the usual shape or meaning | The mirror _______ his reflection. ## The story was completely _______ by the media.
+duration | noun | 지속 시간 | the length of time something lasts | The flight's _______ is about six hours. ## Please stay seated for the _______ of the performance.
+erosion | noun | 침식, 부식 | the gradual wearing away of something, especially by natural forces | Coastal _______ threatens many beachfront homes. ## The cliffs show clear signs of _______.
+ethical | adjective | 윤리적인 | relating to moral principles of right and wrong | Doctors must follow strict _______ guidelines. ## There are _______ concerns about the new technology.
+format | noun | 형식 | the way something is arranged, organized, or presented | Please submit the report in PDF _______. ## The show follows a familiar quiz _______.
+founded | verb | 설립된 | established or set up, especially an institution | The university was _______ over a hundred years ago. ## Their friendship was _______ on mutual respect.
+inherent | adjective | 내재된, 본질적인 | existing as a natural and permanent part of something | There is an _______ risk in any investment. ## Curiosity is _______ in young children.
+insights | noun | 통찰 | deep or accurate understandings of a situation | The survey gave us valuable _______ into customer needs. ## Her book offers deep _______ into human behavior.
+integral | adjective | 필수적인 | essential to make something whole or complete | Trust is an _______ part of any partnership. ## Music is _______ to the film's emotional impact.
+intermediate | adjective | 중간의 | between two extremes or stages | This class is designed for _______ students. ## They stopped at an _______ point to rest.
+manual | noun / adjective | 설명서, 수동의 | operated by hand, or a book of instructions | Please read the user _______ before assembling the desk. ## The car has both automatic and _______ transmission.
+mature | adjective / verb | 성숙한, 성숙하다 | fully developed physically or mentally | She seems very _______ for her age. ## Wine needs time to _______ properly.
+mediation | noun | 중재, 조정 | intervention to help resolve a dispute between parties | The couple agreed to try _______ instead of divorce court. ## International _______ helped end the conflict.
+medium | noun / adjective | 매체, 중간의 | a means by which something is communicated, or a middle position | Television remains a powerful _______ for advertising. ## I'd like my steak cooked _______.
+military | adjective / noun | 군사의, 군대 | relating to soldiers and armed forces | He served in the _______ for over a decade. ## The country increased its _______ spending.
+minimal | adjective | 최소한의 | of the smallest possible amount or degree | The damage from the storm was _______. ## The design uses a _______ color palette.
+mutual | adjective | 상호간의 | shared or felt equally by two or more parties | They share a _______ respect for one another. ## The deal was reached through _______ agreement.
+norms | noun | 규범 | standards of behavior typical of a group | Social _______ vary greatly between cultures. ## The new employee quickly learned the office _______.
+overlap | verb / noun | 겹치다, 중복 | to partially cover or coincide with something else | Their work schedules sometimes _______. ## There is significant _______ between the two research fields.
+passive | adjective | 소극적인, 수동적인 | accepting what happens without resistance | He took a _______ approach and let others decide. ## The sentence is written in the _______ voice.
+portion | noun | 부분, 몫 | a part of a larger whole | She ate only a small _______ of her meal. ## A large _______ of the budget goes to healthcare.
+preliminary | adjective | 예비의 | coming before the main part; introductory | The _______ results look promising. ## A _______ hearing will be held next week.
+protocol | noun | 규약, 프로토콜 | an official procedure or system of rules | Doctors followed strict safety _______ during the surgery. ## The embassy observed formal diplomatic _______.
+qualitative | adjective | 질적인 | relating to quality rather than quantity | The study used _______ interviews rather than surveys. ## There was a _______ difference between the two products.
+refine | verb | 개선하다, 정제하다 | to improve something by making small changes | She continued to _______ her writing style over the years. ## Oil must be _______ before it can be used as fuel.
+relaxed | adjective | 편안한, 느긋한 | free from tension or anxiety | The atmosphere at the party was _______ and friendly. ## He felt more _______ after his vacation.
+restraints | noun | 제약, 억제 | measures that limit or control something | Financial _______ forced the company to cut spending. ## The patient was placed in physical _______ for safety.
+revolution | noun | 혁명 | a fundamental change, often sudden and dramatic, especially in government | The country underwent a political _______ in 1979. ## The internet caused a _______ in how people communicate.
+rigid | adjective | 엄격한, 딱딱한 | unable to bend or change; strict | The metal rod is completely _______. ## Her boss has very _______ rules about lateness.
+route | noun | 경로 | a way or path taken to get from one place to another | We took a scenic _______ through the mountains. ## The delivery _______ was changed due to construction.
+scenario | noun | 시나리오, 상황 | a possible sequence of future events | In the worst-case _______, the project could fail entirely. ## The training included several emergency _______.
+sphere | noun | 영역, 구 | an area of activity or interest, or a round three-dimensional shape | Her influence extends beyond the political _______. ## The planet is roughly a perfect _______.
+subordinate | noun / adjective | 부하, 하급의 | lower in rank or position | The manager treated her _______ with respect. ## In the sentence, this is a _______ clause.
+supplementary | adjective | 보충의, 추가의 | added to complete or enhance something | The doctor recommended a _______ vitamin. ## Please read the _______ materials before class.
+suspended | verb / adjective | 중단된, 정지된 | temporarily stopped or postponed | The player was _______ for two games. ## Flights were _______ due to the storm.
+team | noun | 팀 | a group of people working together toward a shared goal | Our _______ won the championship this year. ## She joined the marketing _______ last month.
+temporary | adjective | 일시적인 | lasting for a limited time only | He took a _______ job while looking for something permanent. ## The bridge closure is only _______.
+trigger | noun / verb | 촉발 요인, 유발하다 | an event that causes something else to happen | Stress can be a _______ for headaches. ## The scandal could _______ a political crisis.
+unified | verb / adjective | 통합된 | brought together into a single whole | The country finally became _______ after years of conflict. ## They presented a _______ front on the issue.
+violation | noun | 위반 | an act that breaches a rule, law, or agreement | The company was fined for a safety _______. ## Speeding is a _______ of traffic law.
+vision | noun | 시력, 비전 | the ability to think about the future with imagination, or the sense of sight | The CEO shared her _______ for the company's future. ## He wears glasses to correct his _______.`,
+  10: `adjacent | adjective | 인접한 | next to or adjoining something else | The hotel is _______ to the train station. ## They live in the house _______ to ours.
+albeit | conjunction | 비록 ~이지만 | although; even though | The plan worked, _______ more slowly than expected. ## She finished the race, _______ in last place.
+assembly | noun | 조립, 집회 | a group of people gathered for a purpose, or the process of putting parts together | The furniture requires simple _______ at home. ## The student _______ was held in the gymnasium.
+collapse | verb / noun | 붕괴하다, 붕괴 | to fall down or fail suddenly | The old bridge finally _______ during the storm. ## Investors feared a total market _______.
+colleagues | noun | 동료 | people one works with, especially in a profession | She invited her _______ to the retirement party. ## He gets along well with his _______.
+compiled | verb | 편집된, 수집된 | put together information from various sources | The researcher _______ years of data into one report. ## The playlist was _______ from listener requests.
+conceived | verb | 구상된, 생각해낸 | formed in the mind, or became pregnant | The idea was first _______ during a late-night conversation. ## The novel was _______ as a trilogy from the start.
+convinced | verb / adjective | 확신하는, 확신시킨 | made certain that something is true | She _______ her boss to approve the budget. ## He remained _______ that he was right.
+depression | noun | 우울증, 불경기 | a state of severe sadness, or a period of severe economic decline | She sought therapy to cope with her _______. ## The Great _______ left millions unemployed.
+encountered | verb | 마주친, 부딴친 | met with or experienced, often unexpectedly | We _______ several problems during the move. ## She _______ an old friend at the airport.
+enormous | adjective | 거대한 | extremely large in size or amount | The company made an _______ profit last year. ## They live in an _______ house on the coast.
+forthcoming | adjective | 다가오는, 곧 나올 | about to happen or appear soon; willing to give information | Details about the _______ movie remain a secret. ## He was surprisingly _______ about his past.
+inclined | adjective | ~하는 경향이 있는 | having a tendency or preference to do something | She is _______ to agree with the new proposal. ## I'm not _______ to trust him after what happened.
+integrity | noun | 진실성, 성실 | the quality of being honest and having strong moral principles | He is respected for his honesty and _______. ## The scandal damaged the company's _______.
+intrinsic | adjective | 본질적인 | belonging naturally to something; essential | Curiosity is an _______ part of human nature. ## The painting has _______ artistic value beyond its price.
+invoked | verb | 발동된, 언급된 | called upon or cited, especially a law or principle | The government _______ emergency powers during the crisis. ## She _______ an old law to support her case.
+levy | noun / verb | 세금, 부과하다 | an imposed tax or fee, or to impose one | The city introduced a new parking _______. ## The government plans to _______ a tax on sugary drinks.
+likewise | adverb | 마찬가지로 | in the same way; similarly | She smiled, and he did _______. ## Take good notes; your classmates should do _______.
+nonetheless | adverb | 그럼에도 불구하고 | in spite of that; nevertheless | It was raining; _______, they went for a walk. ## The task was hard, but she finished it _______.
+notwithstanding | preposition | ~에도 불구하고 | despite; in spite of | The event went ahead, weather _______. ## _______ the criticism, the plan was approved.
+odd | adjective | 이상한, 홀수의 | strange or unusual; not divisible evenly by two | It was _______ that he didn't call back. ## Seven is an _______ number.
+ongoing | adjective | 진행 중인 | continuing to happen or develop | The investigation is still _______. ## They provide _______ support to new employees.
+panel | noun | 패널, 판 | a small group chosen to discuss or decide something, or a flat piece of material | A _______ of experts will judge the competition. ## The solar _______ was installed on the roof.
+persistent | adjective | 지속적인, 끈질긴 | continuing firmly despite difficulty or opposition | She had a _______ cough for weeks. ## His _______ efforts eventually paid off.
+posed | verb | 제기된, 자세를 취한 | presented or created, especially a question or problem | The question _______ by the reporter caught him off guard. ## The models _______ for the camera.
+reluctant | adjective | 꺼리는, 주저하는 | unwilling and hesitant to do something | He was _______ to share his true feelings. ## She seemed _______ to accept the offer.
+so-called | adjective | 소위, 이른바 | commonly named as such, often with implied doubt | The _______ expert gave surprisingly bad advice. ## His _______ friends abandoned him when he needed help.
+straightforward | adjective | 간단한, 솔직한 | simple and easy to understand; direct | The instructions were _______ and easy to follow. ## She gave a _______ answer without any excuses.
+undergo | verb | 겪다, 경험하다 | to experience or go through something, often difficult | The patient will _______ surgery next week. ## The company had to _______ major restructuring.
+whereby | adverb | ~에 의하여 | by which; through which | They created a system _______ workers could report problems anonymously. ## The treaty established rules _______ disputes would be resolved.`,
+};
+
+const SUBLIST_LABELS = {1: "Sublist 1 (60 words)", 2: "Sublist 2 (60 words)", 3: "Sublist 3 (60 words)", 4: "Sublist 4 (60 words)", 5: "Sublist 5 (60 words)", 6: "Sublist 6 (60 words)", 7: "Sublist 7 (60 words)", 8: "Sublist 8 (60 words)", 9: "Sublist 9 (60 words)", 10: "Sublist 10 (30 words)"};
+
+let DEFAULT_LIST = SUBLISTS[1];
+let currentSublistNum = 1;
+
+// ---------- Core state ----------
+let words = [];
+let order = [];
+let pos = 0;
+let score = 0;
+let mistakes = [];
+let direction = 'defToWord'; // 'defToWord' = see definition, type the word (auto-graded)
+                              // 'wordToDef' = see word, type the definition (self-graded)
+let shuffleOn = true;
+let retestMode = false;
+
+// ---------- No-typing preview mode ----------
+let previewWords = [];
+let previewIndex = 0;
+
+// ---------- SRS (Leitner) state ----------
+let srsModeOn = false;
+let srsKey = '';
+let srsState = {};
+let sessionIsSRS = false;
+const BOX_INTERVALS = { 1: 1, 2: 2, 3: 4, 4: 7, 5: 14 }; // days until next review, by box
+const MAX_BOX = 5;
+
+// Speaks a word aloud using the browser's built-in text-to-speech —
+// no external service, no cost, works offline in supported browsers.
+// Generic bottom toast, reused by both the audio-playback and voice-input
+// fallbacks below.
+function showToast(message){
+  const toast = document.createElement('div');
+  toast.className = 'audio-toast';
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 4200);
+}
+
+// Shown at most once per session, so a browser with no audio support
+// doesn't nag the student every time they tap a speaker button.
+let audioFallbackShown = false;
+function showAudioFallbackToast(){
+  if(audioFallbackShown) return;
+  audioFallbackShown = true;
+  showToast("🔈 Audio isn't available in this browser — pronunciation playback couldn't start.");
+}
+
+function speakWord(word){
+  if(!word) return;
+  if(!('speechSynthesis' in window)){
+    showAudioFallbackToast();
+    return;
+  }
+  window.speechSynthesis.cancel(); // stop anything already playing
+  const utter = new SpeechSynthesisUtterance(word);
+  utter.lang = 'en-US';
+  utter.rate = 0.85;
+  utter.onerror = () => showAudioFallbackToast();
+  window.speechSynthesis.speak(utter);
+  // Some browsers fail silently (no error event) when no voice is
+  // available — if nothing actually starts playing shortly after, treat
+  // that as a failure too.
+  setTimeout(() => {
+    if(!window.speechSynthesis.speaking && !window.speechSynthesis.pending){
+      showAudioFallbackToast();
+    }
+  }, 500);
+}
+
+// Shows/updates the thin progress bar under the header. Pass no arguments
+// (or hide=true) to hide it on screens where progress doesn't apply.
+function updateProgressBar(current, total, hide){
+  const track = document.getElementById('progressTrack');
+  const fill = document.getElementById('progressFill');
+  if(hide || !total){
+    track.style.display = 'none';
+    return;
+  }
+  track.style.display = 'block';
+  const pct = Math.min(100, Math.max(0, (current / total) * 100));
+  fill.style.width = pct + '%';
+}
+
+// A styled confirm dialog replacing the browser's native confirm() popup,
+// so leaving mid-test matches the app's own look instead of a jarring
+// system box. Clicking outside the box, or "Stay", cancels; "Leave" runs
+// onConfirm.
+function showConfirmModal(message, onConfirm, confirmLabel = 'Leave', cancelLabel = 'Stay'){
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.innerHTML = `
+    <div class="modal-box">
+      <p class="modal-message">${message}</p>
+      <div class="row" style="justify-content:flex-end; margin:0;">
+        <button class="btn ghost" id="modalCancelBtn">${cancelLabel}</button>
+        <button class="btn" id="modalConfirmBtn">${confirmLabel}</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const close = () => overlay.remove();
+  overlay.querySelector('#modalCancelBtn').addEventListener('click', close);
+  overlay.querySelector('#modalConfirmBtn').addEventListener('click', () => { close(); onConfirm(); });
+  overlay.addEventListener('click', (e) => { if(e.target === overlay) close(); });
+}
+
+function speakButtonHtml(term){
+  return `<button type="button" class="speak-btn" data-word="${term.replace(/"/g,'&quot;')}" title="Hear pronunciation" aria-label="Hear pronunciation">🔊</button>`;
+}
+
+const stage = document.getElementById('stage');
+// Event delegation: works for every future re-render without rewiring.
+stage.addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-word]');
+  if(btn) speakWord(btn.dataset.word);
+});
+
+// On small screens, free up vertical space for the keyboard by sliding
+// the sticky header away while the answer field is actually focused
+// (CSS only applies this under the mobile breakpoint — see @media rule).
+stage.addEventListener('focusin', (e) => {
+  if(e.target && e.target.id === 'answerInput'){
+    document.documentElement.classList.add('keyboard-open');
+  }
+});
+stage.addEventListener('focusout', (e) => {
+  if(e.target && e.target.id === 'answerInput'){
+    document.documentElement.classList.remove('keyboard-open');
+  }
+});
+
+// Keeps the pinned mobile answer bar exactly above the on-screen keyboard
+// by measuring the real visible area (window.innerHeight alone doesn't
+// shrink on every browser when the keyboard opens — the visualViewport
+// API is the only way to reliably know how much space the keyboard is
+// actually covering, right now, on this device).
+function updateAnswerBarForKeyboard(){
+  const vv = window.visualViewport;
+  const bar = document.querySelector('.answer-row');
+  if(!vv || !bar) return;
+  const keyboardInset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+  bar.style.bottom = keyboardInset + 'px';
+}
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', updateAnswerBarForKeyboard);
+  window.visualViewport.addEventListener('scroll', updateAnswerBarForKeyboard);
+}
+
+const progressEl = document.getElementById('progress');
+
+function parseList(text){
+  return text.split('\n')
+    .map(l => l.trim())
+    .filter(Boolean)
+    .map(line => {
+      if(line.includes('|')){
+        const parts = line.split('|').map(p => p.trim());
+        const [term, pos, korean, def, cloze] = parts;
+        return term && def ? { term, pos: pos || '', korean: korean || '', def, cloze: cloze || '' } : null;
+      }
+      const m = line.match(/^(.*?)[:\-–—,]\s*(.+)$/);
+      if(!m) return null;
+      const term = m[1].trim();
+      const def = m[2].trim();
+      return term && def ? { term, pos: '', korean: '', def, cloze: '' } : null;
+    })
+    .filter(Boolean);
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+
+function normalize(s){
+  return s.trim().toLowerCase().replace(/[.,!?;:'"]+$/,'');
+}
+
+// Edit distance between two strings (Damerau-Levenshtein, optimal string
+// alignment variant): counts a single insertion, deletion, substitution,
+// OR an adjacent-letter swap (e.g. "aera" -> "area") as one edit each,
+// since a swapped pair is one of the most common typing slips.
+function levenshtein(a, b){
+  const m = a.length, n = b.length;
+  if(m === 0) return n;
+  if(n === 0) return m;
+  const dp = Array.from({ length: m + 1 }, (_, i) => [i, ...Array(n).fill(0)]);
+  for(let j = 0; j <= n; j++) dp[0][j] = j;
+  for(let i = 1; i <= m; i++){
+    for(let j = 1; j <= n; j++){
+      const cost = a[i-1] === b[j-1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i-1][j] + 1,        // deletion
+        dp[i][j-1] + 1,        // insertion
+        dp[i-1][j-1] + cost    // substitution (or match)
+      );
+      if(i > 1 && j > 1 && a[i-1] === b[j-2] && a[i-2] === b[j-1]){
+        dp[i][j] = Math.min(dp[i][j], dp[i-2][j-2] + 1); // adjacent transposition
+      }
+    }
+  }
+  return dp[m][n];
+}
+
+// More forgiving grading: exact match is always correct. A single typo
+// (one letter added, missing, or swapped) on a word of 6+ letters is
+// treated as correct too, but flagged as "close" so the student still
+// sees the exact spelling rather than being told they were simply right.
+function gradeSpelling(typed, correctTerm){
+  const a = normalize(typed);
+  const b = normalize(correctTerm);
+  if(a === b) return { correct: true, close: false };
+  const dist = levenshtein(a, b);
+  if(b.length >= 6 && dist === 1) return { correct: true, close: true };
+  return { correct: false, close: false };
+}
+
+// Replaces the placeholder run of underscores in a cloze sentence with a
+// blank whose length matches the actual answer's letter count (spaces
+// stripped), so "hello" always shows exactly 5 underscores.
+function fillClozeBlank(sentence, term){
+  const letterCount = term.replace(/\s+/g, '').length;
+  const blank = '_'.repeat(Math.max(letterCount, 1));
+  return sentence.replace(/_+/, blank);
+}
+
+// Picks one of a card's cloze sentences at random (if any exist).
+function getRandomCloze(pair){
+  if(!pair.cloze) return null;
+  const options = pair.cloze.split('##').map(s => s.trim()).filter(Boolean);
+  if(options.length === 0) return null;
+  return options[Math.floor(Math.random() * options.length)];
+}
+
+// Fills a cloze sentence's blank with the real word (bolded) instead of
+// underscores, so it reads as a natural example sentence.
+function fillClozeExample(sentence, term){
+  return sentence.replace(/_+/, `<b>${term}</b>`);
+}
+
+// Builds the "Example: ..." line shown outside cloze mode, so students see
+// the word used in context even in definition-based or word-based modes.
+function exampleHtml(pair){
+  const sentence = getRandomCloze(pair);
+  if(!sentence) return '';
+  return `<div class="correction example-sentence">Example: ${fillClozeExample(sentence, pair.term)}</div>`;
+}
+
+// ---------- Date helpers (local time, no timezone drift) ----------
+function todayStr(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function addDays(dateStr, days){
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const dt = new Date(y, m-1, d);
+  dt.setDate(dt.getDate()+days);
+  return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+}
+function daysUntil(dateStr){
+  const [y,m,d] = dateStr.split('-').map(Number);
+  const target = new Date(y, m-1, d);
+  const now = new Date();
+  now.setHours(0,0,0,0);
+  return Math.round((target - now) / 86400000);
+}
+
+// ---------- SRS storage helpers ----------
+function hashStr(str){
+  let h = 5381;
+  for(let i=0;i<str.length;i++){ h = ((h*33) ^ str.charCodeAt(i)) >>> 0; }
+  return h.toString(36);
+}
+function keyFor(wordList){
+  const terms = wordList.map(w => w.term.toLowerCase()).sort();
+  return 'vocabSRS_' + hashStr(terms.join('|'));
+}
+function loadSRS(key){
+  try{
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : {};
+  }catch(e){ return {}; }
+}
+function saveSRS(key, state){
+  try{ localStorage.setItem(key, JSON.stringify(state)); }catch(e){ /* storage unavailable */ }
+}
+function boxOf(term){
+  const rec = srsState[term.toLowerCase()];
+  return rec ? rec.box : 1; // new words start in box 1
+}
+function isDue(term){
+  const rec = srsState[term.toLowerCase()];
+  if(!rec) return true; // never reviewed = due now
+  return daysUntil(rec.due) <= 0;
+}
+function recordAnswer(term, correct){
+  const key = term.toLowerCase();
+  const cur = srsState[key] || { box: 1, due: todayStr() };
+  cur.box = correct ? Math.min(cur.box + 1, MAX_BOX) : 1;
+  cur.due = addDays(todayStr(), BOX_INTERVALS[cur.box]);
+  srsState[key] = cur;
+  saveSRS(srsKey, srsState);
+}
+// ---------- In-progress session persistence ----------
+// Lets someone close the tab mid-deck and resume exactly where they left
+// off later — a snapshot of the active test, not just SRS mastery levels.
+const SESSION_KEY = 'awl-inprogress-session';
+
+function saveSessionProgress(){
+  if(pos >= order.length){ clearSessionProgress(); return; } // nothing left to resume
+  const snapshot = {
+    sublistNum: currentSublistNum,
+    direction, sessionIsSRS,
+    srsKey: sessionIsSRS ? srsKey : null,
+    words, order, pos, score, mistakes,
+    savedAt: Date.now(),
+  };
+  try{ localStorage.setItem(SESSION_KEY, JSON.stringify(snapshot)); }catch(e){ /* storage unavailable */ }
+}
+function loadSessionProgress(){
+  try{
+    const raw = localStorage.getItem(SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){ return null; }
+}
+function clearSessionProgress(){
+  try{ localStorage.removeItem(SESSION_KEY); }catch(e){ /* storage unavailable */ }
+}
+
+function boxCounts(wordList){
+  const counts = {1:0,2:0,3:0,4:0,5:0};
+  let due = 0;
+  wordList.forEach(w => {
+    const b = boxOf(w.term);
+    counts[b] = (counts[b]||0) + 1;
+    if(isDue(w.term)) due++;
+  });
+  return { counts, due };
+}
+
+function renderSRSOverview(){
+  const el = document.getElementById('srsOverview');
+  if(!el) return;
+  const parsed = parseList(document.getElementById('listInput').value);
+  if(parsed.length === 0){ el.innerHTML = ''; return; }
+  srsKey = keyFor(parsed);
+  srsState = loadSRS(srsKey);
+  const { counts, due } = boxCounts(parsed);
+  el.innerHTML = `
+    <div class="due-line">${due} of ${parsed.length} card${parsed.length===1?'':'s'} due for review today</div>
+    <div class="box-badges">
+      ${[1,2,3,4,5].map(b => `<span class="box-badge">Level ${b}: ${counts[b]}</span>`).join('')}
+    </div>
+  `;
+}
+
+function deckPreview(n){
+  const parsed = parseList(SUBLISTS[n]);
+  const sample = parsed.slice(0, 4).map(w => w.term).join(', ');
+  return { count: parsed.length, sample };
+}
+
+// Reads this sublist's own saved spaced-repetition state directly from
+// localStorage — deliberately NOT touching the live srsState/srsKey
+// globals, since those belong to whichever deck is currently being tested.
+// A word counts as "known" once it has reached the top review box.
+function masteryCount(n){
+  const parsed = parseList(SUBLISTS[n]);
+  const key = keyFor(parsed);
+  const state = loadSRS(key);
+  let known = 0;
+  parsed.forEach(w => {
+    const rec = state[w.term.toLowerCase()];
+    if(rec && rec.box >= MAX_BOX) known++;
+  });
+  return { known, total: parsed.length };
+}
+
+function renderDeckMenu(){
+  progressEl.textContent = '';
+  updateProgressBar(0, 0, true);
+  const saved = loadSessionProgress();
+  const canResume = saved && saved.pos < saved.order.length;
+  const resumeBannerHtml = canResume ? `
+    <div class="resume-banner">
+      <div>📖 Resume <b>${SUBLIST_LABELS[saved.sublistNum]}</b> — card ${saved.pos + 1} of ${saved.order.length}, score ${saved.score} so far.</div>
+      <div class="row" style="margin-top:10px;">
+        <button class="btn" id="resumeBtn">Resume</button>
+        <button class="btn ghost" id="discardResumeBtn">Discard</button>
+      </div>
+    </div>
+  ` : '';
+  stage.innerHTML = `
+    <div class="setup">
+      ${resumeBannerHtml}
+      <h1>Academic Word List</h1>
+      <p class="sub">Pick a sublist below. "Quick start" jumps straight into testing, "👀 Preview" flips through the words with no typing first, and "Customize" lets you change how you're tested.</p>
+      <div class="row" style="flex-direction:column; align-items:stretch; gap:10px;">
+        ${Object.keys(SUBLIST_LABELS).map(n => {
+          const { count, sample } = deckPreview(n);
+          const { known, total } = masteryCount(n);
+          return `
+            <div class="deck-card" style="border:1px solid var(--rule); border-radius:6px; padding:12px 14px; background:var(--card);">
+              <div style="display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin-bottom:2px;">
+                <div style="font-weight:600;">Sublist ${n} <span style="color:var(--muted); font-weight:400; font-size:12.5px;">(${count} words)</span></div>
+                <span class="mastery-badge${known > 0 ? ' has-progress' : ''}">${known}/${total} known</span>
+              </div>
+              <div style="font-size:12.5px; color:var(--muted); margin-bottom:10px;">e.g. ${sample}…</div>
+              <div class="row" style="margin:0; gap:8px; flex-wrap:wrap;">
+                <button class="btn quick-start-btn" data-num="${n}" style="padding:8px 14px; font-size:12.5px;">▶ Quick start</button>
+                <button class="btn ghost preview-btn" data-num="${n}" style="padding:8px 14px; font-size:12.5px;">👀 Preview</button>
+                <button class="btn ghost customize-btn" data-num="${n}" style="padding:8px 14px; font-size:12.5px;">Customize</button>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    </div>
+  `;
+
+  if(canResume){
+    document.getElementById('resumeBtn').addEventListener('click', () => {
+      currentSublistNum = saved.sublistNum;
+      DEFAULT_LIST = SUBLISTS[currentSublistNum];
+      direction = saved.direction;
+      sessionIsSRS = saved.sessionIsSRS;
+      words = saved.words;
+      order = saved.order;
+      pos = saved.pos;
+      score = saved.score;
+      mistakes = saved.mistakes;
+      if(sessionIsSRS && saved.srsKey){
+        srsKey = saved.srsKey;
+        srsState = loadSRS(srsKey);
+      }
+      renderCard();
+    });
+    document.getElementById('discardResumeBtn').addEventListener('click', () => {
+      showConfirmModal('Discard your saved progress on this sublist? This can\'t be undone.', () => {
+        clearSessionProgress();
+        renderDeckMenu();
+      }, 'Discard', 'Cancel');
+    });
+  }
+
+  document.querySelectorAll('.customize-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentSublistNum = parseInt(btn.dataset.num, 10);
+      DEFAULT_LIST = SUBLISTS[currentSublistNum];
+      renderSetup();
+    });
+  });
+
+  document.querySelectorAll('.preview-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentSublistNum = parseInt(btn.dataset.num, 10);
+      DEFAULT_LIST = SUBLISTS[currentSublistNum];
+      previewWords = parseList(DEFAULT_LIST);
+      previewIndex = 0;
+      renderPreview();
+    });
+  });
+
+  document.querySelectorAll('.quick-start-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      currentSublistNum = parseInt(btn.dataset.num, 10);
+      DEFAULT_LIST = SUBLISTS[currentSublistNum];
+      // Smart defaults: definition -> word, shuffled, no spaced repetition
+      direction = 'defToWord';
+      shuffleOn = true;
+      srsModeOn = false;
+      const parsed = parseList(DEFAULT_LIST);
+      words = parsed;
+      sessionIsSRS = false;
+      order = shuffle(words.map((_, i) => i));
+      pos = 0; score = 0; mistakes = []; retestMode = false;
+      renderCard();
+    });
+  });
+}
+
+function renderSetup(){
+  progressEl.textContent = '';
+  updateProgressBar(0, 0, true);
+  stage.innerHTML = `
+    <div class="setup">
+      <button class="btn ghost" id="backToMenuBtn" style="margin-bottom:14px;">◀ Choose a different sublist</button>
+      <h1>${SUBLIST_LABELS[currentSublistNum]}</h1>
+      <p class="sub">Set up how you'd like to be tested, then begin.</p>
+
+      <div class="field">
+        <label>How should the student be tested?</label>
+        <div class="segmented" id="dirToggle">
+          <button data-dir="defToWord" class="${direction==='defToWord'?'active':''}">See definition → type the word</button>
+          <button data-dir="wordToDef" class="${direction==='wordToDef'?'active':''}">See word → type the definition</button>
+          <button data-dir="clozeToWord" class="${direction==='clozeToWord'?'active':''}">See sentence → type the missing word</button>
+          <button data-dir="listenToWord" class="${direction==='listenToWord'?'active':''}">🔊 Hear it → type the word</button>
+        </div>
+        <div class="hint" id="dirHint"></div>
+      </div>
+
+      <div class="field checkline">
+        <input type="checkbox" id="shuffleBox" ${shuffleOn?'checked':''}>
+        <label style="margin:0; text-transform:none; letter-spacing:0; font-family:'Source Serif 4',serif; font-size:13.5px; color:var(--ink);" for="shuffleBox">Shuffle card order</label>
+      </div>
+
+      <div class="field">
+        <div class="checkline">
+          <input type="checkbox" id="srsBox" ${srsModeOn?'checked':''}>
+          <label style="margin:0; text-transform:none; letter-spacing:0; font-family:'Source Serif 4',serif; font-size:13.5px; color:var(--ink);" for="srsBox">🧠 Smart review — spend more time on words you keep missing (saved on this device)</label>
+        </div>
+        <div class="srs-overview" id="srsOverview"></div>
+      </div>
+
+      <div class="row">
+        <button class="btn" id="startBtn">Begin test</button>
+      </div>
+      <div class="inline-notice" id="setupNotice" style="display:none;"></div>
+
+      <details class="field" style="margin-top:22px; border-top:1px solid var(--rule); padding-top:16px;">
+        <summary style="cursor:pointer; font-family:'IBM Plex Mono', monospace; font-size:11.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">⚙️ Advanced: view or edit the word list</summary>
+        <div style="margin-top:12px;">
+          <p class="hint" style="margin-top:0;">Format: <b>word | part of speech | Korean | definition | cloze sentence</b> (use <b>_______</b> where the word belongs). Separate multiple cloze sentences with <b>##</b>.</p>
+          <label for="listInput">Word list</label>
+          <textarea id="listInput">${DEFAULT_LIST}</textarea>
+          <div class="hint">Edit freely, or paste in your own list — changes only apply to this session.</div>
+        </div>
+      </details>
+    </div>
+  `;
+  updateDirHint();
+  renderSRSOverview();
+
+  document.getElementById('backToMenuBtn').addEventListener('click', renderDeckMenu);
+  document.getElementById('dirToggle').addEventListener('click', (e)=>{
+    const btn = e.target.closest('button');
+    if(!btn) return;
+    direction = btn.dataset.dir;
+    renderSetup();
+  });
+  document.getElementById('shuffleBox').addEventListener('change', (e)=>{
+    shuffleOn = e.target.checked;
+  });
+  document.getElementById('srsBox').addEventListener('change', (e)=>{
+    srsModeOn = e.target.checked;
+    document.getElementById('startBtn').textContent = srsModeOn ? "Begin test" : "Begin test";
+  });
+  document.getElementById('listInput').addEventListener('input', renderSRSOverview);
+
+  document.getElementById('startBtn').addEventListener('click', ()=>{
+    const notice = document.getElementById('setupNotice');
+    notice.style.display = 'none';
+
+    const parsed = parseList(document.getElementById('listInput').value);
+    if(parsed.length === 0){
+      notice.className = 'inline-notice error';
+      notice.textContent = 'Add at least one line in the form "word: definition" before starting.';
+      notice.style.display = 'block';
+      return;
+    }
+
+    if(srsModeOn){
+      srsKey = keyFor(parsed);
+      srsState = loadSRS(srsKey);
+      const due = parsed.filter(w => isDue(w.term));
+      if(due.length === 0){
+        notice.className = 'inline-notice info';
+        notice.textContent = '🎉 No cards are due for review today — nice work! Check back tomorrow, or turn off smart review to practice the full list.';
+        notice.style.display = 'block';
+        return;
+      }
+      words = due;
+      sessionIsSRS = true;
+    } else {
+      words = parsed;
+      sessionIsSRS = false;
+    }
+
+    order = shuffleOn ? shuffle(words.map((_,i)=>i)) : words.map((_,i)=>i);
+    pos = 0; score = 0; mistakes = []; retestMode = false;
+    renderCard();
+  });
+}
+
+function updateDirHint(){
+  const hint = document.getElementById('dirHint');
+  if(!hint) return;
+  if(direction === 'defToWord'){
+    hint.textContent = 'Graded automatically — the typed word is checked against your list.';
+  } else if(direction === 'wordToDef'){
+    hint.textContent = 'Graded by the student — the correct definition is shown after they answer, and they mark themselves right or wrong.';
+  } else if(direction === 'listenToWord'){
+    hint.textContent = 'Graded automatically — real listening practice. The word is read aloud (no text shown) and the student types what they heard. The definition and Korean meaning are shown after submitting.';
+  } else {
+    hint.textContent = 'Graded automatically — the student reads a sentence with a blank and types the missing word. The definition and Korean meaning are shown after submitting.';
+  }
+}
+
+function currentPair(){
+  return words[order[pos]];
+}
+
+function renderPreview(){
+  const w = previewWords[previewIndex];
+  progressEl.textContent = `PREVIEW ${previewIndex + 1} OF ${previewWords.length}`;
+  updateProgressBar(previewIndex, previewWords.length);
+  const isLast = previewIndex + 1 >= previewWords.length;
+
+  stage.innerHTML = `
+    <div class="index-card">
+      <button class="btn ghost" id="menuFromPreviewBtn" style="padding:6px 12px; font-size:11.5px; margin-bottom:14px;">◀ Menu</button>
+      <div class="punches"><div class="punch"></div><div class="punch"></div></div>
+      <div class="eyebrow">Preview — no typing${w.pos ? ` <span style="font-family:'IBM Plex Mono', monospace; color:var(--muted); text-transform:none; letter-spacing:0;">(${w.pos})</span>` : ''}</div>
+      <div class="prompt">${w.term}${speakButtonHtml(w.term)}</div>
+      ${w.korean ? `<div class="prompt-korean">${w.korean}</div>` : '<div class="prompt-nokorean"></div>'}
+      <div class="correction">${w.def}</div>
+      ${exampleHtml(w)}
+      <div class="next-row" style="display:flex; justify-content:space-between; gap:10px; margin-top:24px;">
+        <button class="btn ghost" id="prevPreviewBtn" ${previewIndex === 0 ? 'disabled' : ''}>◀ Previous</button>
+        <button class="btn" id="nextPreviewBtn">${isLast ? 'Done — start testing' : 'Next ▶'}</button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById('menuFromPreviewBtn').addEventListener('click', renderDeckMenu);
+  document.getElementById('prevPreviewBtn').addEventListener('click', () => {
+    if(previewIndex > 0){ previewIndex--; renderPreview(); }
+  });
+  document.getElementById('nextPreviewBtn').addEventListener('click', () => {
+    if(!isLast){ previewIndex++; renderPreview(); }
+    else { renderSetup(); }
+  });
+}
+
+function renderCard(){
+  saveSessionProgress();
+  const pair = currentPair();
+  const isDefToWord = direction === 'defToWord';
+  const isCloze = direction === 'clozeToWord';
+  const isListen = direction === 'listenToWord';
+  progressEl.textContent = `CARD ${pos+1} OF ${order.length}`;
+  updateProgressBar(pos, order.length);
+
+  const boxTag = sessionIsSRS ? `<div class="box-tag" style="text-align:center; width:100%;">Level ${boxOf(pair.term)}</div>` : '';
+
+  const clozeOptions = (isCloze && pair.cloze)
+    ? pair.cloze.split('##').map(s => s.trim()).filter(Boolean)
+    : [];
+  const hasCloze = isCloze && clozeOptions.length > 0;
+  const chosenCloze = hasCloze ? clozeOptions[Math.floor(Math.random() * clozeOptions.length)] : '';
+  const eyebrowText = isListen ? 'Listen & spell' : (isCloze ? 'Complete the sentence' : (isDefToWord ? 'Definition' : 'Word'));
+  const promptText = isCloze
+    ? (hasCloze ? fillClozeBlank(chosenCloze, pair.term) : `(No cloze sentence provided — showing definition instead) ${pair.def}`)
+    : (isDefToWord ? pair.def : pair.term);
+  const placeholder = isListen ? 'Type what you heard…' : (isCloze ? 'Type the missing word…' : (isDefToWord ? 'Type the word…' : 'Type the definition…'));
+
+  const promptHtml = isListen
+    ? `<div class="prompt listen-prompt"><button type="button" class="btn listen-play-btn" data-word="${pair.term}">🔊 Play word</button></div>`
+    : `<div class="prompt">${promptText}${(!isDefToWord && !isCloze) ? speakButtonHtml(pair.term) : ''}</div>`;
+
+  stage.innerHTML = `
+    <div class="index-card">
+      <button class="btn ghost" id="menuFromCardBtn" style="padding:6px 12px; font-size:11.5px; margin-bottom:14px;">◀ Menu</button>
+      <div class="punches"><div class="punch"></div><div class="punch"></div></div>
+      <div class="eyebrow">${eyebrowText}${pair.pos ? ` <span style="font-family:'IBM Plex Mono', monospace; color:var(--muted); text-transform:none; letter-spacing:0;">(${pair.pos})</span>` : ''}</div>
+      ${promptHtml}
+      ${isDefToWord && pair.korean ? `<div class="prompt-korean">${pair.korean}</div>` : '<div class="prompt-nokorean"></div>'}
+      ${boxTag}
+
+      <div class="answer-row">
+        <input type="text" id="answerInput" placeholder="${placeholder}" autocomplete="off">
+        <button class="btn" id="submitBtn">Submit</button>
+      </div>
+
+      <div id="feedbackZone"></div>
+    </div>
+  `;
+
+  const input = document.getElementById('answerInput');
+  input.focus();
+  input.addEventListener('keydown', e => { if(e.key === 'Enter') submitAnswer(); });
+  document.getElementById('submitBtn').addEventListener('click', submitAnswer);
+  document.getElementById('menuFromCardBtn').addEventListener('click', () => {
+    showConfirmModal('Leave this test and return to the menu? Your place is saved, so you can resume it later from the menu.', renderDeckMenu);
+  });
+  // The new answer bar starts with no inline position yet — sync it to
+  // the keyboard's current state immediately, rather than waiting for
+  // the next resize event (which won't fire again if the keyboard was
+  // already open before this card appeared).
+  updateAnswerBarForKeyboard();
+
+
+  if(isListen){
+    // Try to play automatically; the button remains for replays or if
+    // the browser blocks audio without a direct click.
+    try{ speakWord(pair.term); }catch(e){ /* ignore — button still works */ }
+  }
+}
+
+function submitAnswer(){
+  const input = document.getElementById('answerInput');
+  const val = input.value;
+  const pair = currentPair();
+  input.disabled = true;
+  document.getElementById('submitBtn').disabled = true;
+
+  const zone = document.getElementById('feedbackZone');
+
+  if(direction === 'defToWord' || direction === 'clozeToWord' || direction === 'listenToWord'){
+    const isCloze = direction === 'clozeToWord';
+    const isListen = direction === 'listenToWord';
+    const { correct, close } = gradeSpelling(val, pair.term);
+    if(correct) score++; else mistakes.push({ term: pair.term, pos: pair.pos, korean: pair.korean, def: pair.def, cloze: pair.cloze, given: val });
+    if(sessionIsSRS) recordAnswer(pair.term, correct);
+
+    const stampClass = correct ? (close ? 'close' : 'correct') : 'wrong';
+    const stampText = correct ? (close ? 'Close!' : 'Correct') : 'Try again';
+
+    zone.innerHTML = `
+      <div class="feedback">
+        <div class="stamp ${stampClass}">${stampText}</div>
+        <div class="correction">${pair.term} ${speakButtonHtml(pair.term)}</div>
+        ${close ? `<div class="correction">One letter off — it's spelled <b>${pair.term}</b></div>` : ''}
+        ${!correct ? `<div class="correction">The word was <b>${pair.term}</b></div>` : ''}
+        ${(isCloze || isListen) ? `<div class="correction">Definition: <b>${pair.def}</b></div>` : ''}
+        ${(isCloze || isListen) && pair.korean ? `<div class="correction">Korean: <b>${pair.korean}</b></div>` : ''}
+        ${!isCloze ? exampleHtml(pair) : ''}
+        ${sessionIsSRS ? `<div class="box-tag">${correct ? `Moved up to Level ${boxOf(pair.term)}` : 'Back to Level 1'} — next review in ${BOX_INTERVALS[boxOf(pair.term)]} day${BOX_INTERVALS[boxOf(pair.term)]===1?'':'s'}</div>` : ''}
+      </div>
+      <div class="next-row"><button class="btn" id="nextBtn">${pos+1 < order.length ? 'Next card' : 'See results'}</button></div>
+    `;
+    document.getElementById('nextBtn').addEventListener('click', advance);
+  } else {
+    zone.innerHTML = `
+      <div class="feedback">
+        <div class="correction">Correct definition: <b>${pair.def}</b></div>
+        ${exampleHtml(pair)}
+        <div class="self-grade">
+          <button class="btn ghost" id="rightBtn">I got it right</button>
+          <button class="btn ghost" id="wrongBtn">I missed it</button>
+        </div>
+      </div>
+    `;
+    document.getElementById('rightBtn').addEventListener('click', ()=>{
+      score++;
+      if(sessionIsSRS) recordAnswer(pair.term, true);
+      advance();
+    });
+    document.getElementById('wrongBtn').addEventListener('click', ()=>{
+      mistakes.push({ term: pair.term, pos: pair.pos, korean: pair.korean, def: pair.def, cloze: pair.cloze, given: val });
+      if(sessionIsSRS) recordAnswer(pair.term, false);
+      zone.innerHTML = `
+        <div class="feedback">
+          <div class="correction">Correct definition: <b>${pair.def}</b></div>
+          ${pair.korean ? `<div class="correction">Korean: <b>${pair.korean}</b></div>` : ''}
+          ${exampleHtml(pair)}
+          ${sessionIsSRS ? `<div class="box-tag">Back to Level 1 — next review in ${BOX_INTERVALS[1]} day</div>` : ''}
+        </div>
+        <div class="next-row"><button class="btn" id="nextBtn">${pos+1 < order.length ? 'Next card' : 'See results'}</button></div>
+      `;
+      document.getElementById('nextBtn').addEventListener('click', advance);
+    });
+  }
+}
+
+function advance(){
+  pos++;
+  if(pos < order.length){
+    renderCard();
+  } else {
+    renderResults();
+  }
+}
+
+function renderResults(){
+  clearSessionProgress(); // deck finished — nothing left to resume
+  progressEl.textContent = 'RESULTS';
+  updateProgressBar(0, 0, true);
+  const total = order.length;
+
+  let boxSummaryHtml = '';
+  if(sessionIsSRS){
+    boxSummaryHtml = `
+      <div class="box-summary">
+        <div class="hint" style="margin-bottom:8px;">Progress levels for today's reviewed cards</div>
+        ${[1,2,3,4,5].map(b => {
+          const n = words.filter(w => boxOf(w.term) === b).length;
+          return n ? `<div class="box-summary-row"><span>Level ${b}</span><span>${n} card${n===1?'':'s'}</span></div>` : '';
+        }).join('')}
+        <div class="hint" style="margin-top:10px;">Come back tomorrow for the next set due for review.</div>
+      </div>
+    `;
+  }
+
+  stage.innerHTML = `
+    <div class="results">
+      <div class="score-big">${score} / ${total}</div>
+      <div class="score-sub">${mistakes.length === 0 ? 'Every card correct.' : `${mistakes.length} card${mistakes.length===1?'':'s'} to review below.`}</div>
+
+      ${mistakes.length ? `
+        <div class="miss-list">
+          ${mistakes.map(m => `
+            <div class="miss-item">
+              <b>${m.term}</b>${m.korean ? ` (${m.korean})` : ''} — ${m.def}
+              ${m.given ? `<div class="given">Answered: "${m.given}"</div>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+
+      ${boxSummaryHtml}
+
+      <div class="row" style="margin-top:24px; justify-content:center;">
+        ${mistakes.length ? `<button class="btn ghost" id="retryBtn">Retest missed cards now</button>` : ''}
+        <button class="btn" id="restartBtn">Done — back to setup</button>
+        <button class="btn ghost" id="menuBtn">Choose a different sublist</button>
+      </div>
+    </div>
+  `;
+
+  if(mistakes.length){
+    document.getElementById('retryBtn').addEventListener('click', ()=>{
+      words = mistakes.map(m => ({ term: m.term, pos: m.pos, korean: m.korean, def: m.def, cloze: m.cloze }));
+      sessionIsSRS = false; // bonus round — doesn't re-touch box assignments
+      order = shuffleOn ? shuffle(words.map((_,i)=>i)) : words.map((_,i)=>i);
+      pos = 0; score = 0; mistakes = [];
+      renderCard();
+    });
+  }
+  document.getElementById('restartBtn').addEventListener('click', renderSetup);
+  document.getElementById('menuBtn').addEventListener('click', renderDeckMenu);
+}
+
+// ---------- Dark mode ----------
+const THEME_KEY = 'awl-flashcards-theme';
+
+function applyTheme(theme){
+  document.documentElement.setAttribute('data-theme', theme);
+  const btn = document.getElementById('themeToggle');
+  if(btn) btn.textContent = theme === 'dark' ? '☀️' : '🌙';
+}
+
+function initTheme(){
+  let saved = 'light';
+  try{ saved = localStorage.getItem(THEME_KEY) || 'light'; }catch(e){ /* storage unavailable */ }
+  applyTheme(saved);
+}
+
+document.getElementById('themeToggle').addEventListener('click', () => {
+  const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  applyTheme(next);
+  try{ localStorage.setItem(THEME_KEY, next); }catch(e){ /* storage unavailable */ }
+});
+
+initTheme();
+renderDeckMenu();
+</script>
+
+
+<script>
+  // Registers the service worker for offline support. Silently does
+  // nothing if the page isn't served over https/localhost (service
+  // workers are blocked on file:// by every browser — this is a
+  // security rule, not something that can be worked around), so this
+  // is always safe to leave in even before the app is hosted.
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {
+        // Offline-support simply won't be available — the app itself
+        // still works completely normally without it.
+      });
+    });
+  }
+</script>
+</body>
+</html>
